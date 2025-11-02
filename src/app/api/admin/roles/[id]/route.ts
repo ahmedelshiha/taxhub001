@@ -113,7 +113,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
     await AuditLoggingService.logAuditEvent({
       action: AuditActionType.ROLE_UPDATED,
       severity: AuditSeverity.INFO,
-      userId: ctx.userId,
+      userId: ctx.userId ?? undefined,
       tenantId: ctx.tenantId,
       targetResourceId: params.id,
       targetResourceType: 'ROLE',
