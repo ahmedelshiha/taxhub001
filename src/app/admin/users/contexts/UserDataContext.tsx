@@ -217,6 +217,9 @@ export function UserDataContextProvider({
     exporting,
     updating,
 
+    // Real-time
+    realtimeConnected,
+
     // Errors
     errorMsg,
     activityError,
