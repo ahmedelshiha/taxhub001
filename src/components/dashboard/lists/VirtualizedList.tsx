@@ -118,7 +118,7 @@ export function useVirtualizedListState<T>(items: T[]) {
 export function withVirtualization<T extends { id?: string | number }>(
   ListComponent: React.ComponentType<{ items: T[]; [key: string]: any }>
 ) {
-  return React.forwardRef<HTMLDivElement, { items: T[]; virtualizeThreshold?: number; [key: string]: any }>(
+  const VirtualizationWrapper = React.forwardRef<HTMLDivElement, { items: T[]; virtualizeThreshold?: number; [key: string]: any }>(
     ({ items, virtualizeThreshold = 100, ...props }, ref) => {
       if (items.length < virtualizeThreshold) {
         return <ListComponent ref={ref} items={items} {...props} />
@@ -138,4 +138,8 @@ export function withVirtualization<T extends { id?: string | number }>(
       )
     }
   )
+
+  VirtualizationWrapper.displayName = `withVirtualization(${ListComponent.displayName || ListComponent.name || 'Component'})`
+
+  return VirtualizationWrapper
 }
