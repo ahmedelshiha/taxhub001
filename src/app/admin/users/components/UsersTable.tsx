@@ -90,6 +90,8 @@ export const UsersTable = memo(function UsersTable({
   onSelectAll
 }: UsersTableProps) {
   const perms = usePermissions()
+  const isMobile = useMediaQuery('(max-width: 640px)')
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table')
 
   const handleRoleChange = useCallback(
     (userId: string, newRole: UserItem['role']) => {
