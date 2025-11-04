@@ -13,6 +13,8 @@ import { ErrorBoundary } from '@/components/providers/error-boundary'
 import { TabSkeleton, DashboardTabSkeleton, MinimalTabSkeleton } from './components/TabSkeleton'
 import { toast } from 'sonner'
 import { performanceMetrics } from '@/lib/performance/metrics'
+import { isFeatureEnabled } from '@/lib/feature-flags'
+import { trackEvent } from '@/lib/analytics'
 
 // Dynamic imports for less-frequently used tabs (reduces initial bundle by ~40KB)
 const WorkflowsTab = lazy(() => import('./components/tabs/WorkflowsTab').then(m => ({ default: m.WorkflowsTab })))
@@ -46,18 +48,39 @@ export function EnterpriseUsersPage() {
   // Performance: start render measure (ended in effects below)
   performanceMetrics.startMeasure('admin-users-page:render')
 
-  // Initialize tab from URL query (?tab=...)
+  const context = useUsersContext()
+
+  // Initialize tab from URL query (?tab=...) and apply role filter (?role=...)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const tab = params.get('tab') as TabType | null
+      const roleParam = params.get('role') as string | null
+      const isRetireEntitiesTabEnabled = isFeatureEnabled('retireEntitiesTab', false)
+
+      let tabToSet: TabType = 'dashboard'
       const validTabs: TabType[] = ['dashboard', 'entities', 'workflows', 'bulk-operations', 'audit', 'rbac', 'admin']
+      const validRoles = ['ALL', 'ADMIN', 'TEAM_LEAD', 'TEAM_MEMBER', 'STAFF', 'CLIENT']
+
       if (tab && (validTabs as string[]).includes(tab)) {
-        setActiveTab(tab)
+        // If Entities tab is requested but feature flag is enabled, redirect to Dashboard
+        if (tab === 'entities' && isRetireEntitiesTabEnabled) {
+          tabToSet = 'dashboard'
+          // Track legacy redirect for telemetry
+          trackEvent('users.redirect_legacy', { from: 'entities', to: 'dashboard' })
+        } else {
+          tabToSet = tab
+        }
       }
+
+      // Apply role filter if provided in URL
+      if (roleParam && validRoles.includes(roleParam) && context.setRoleFilter) {
+        context.setRoleFilter(roleParam as any)
+      }
+
+      setActiveTab(tabToSet)
     }
   }, [])
-  const context = useUsersContext()
 
   // End render measure on initial mount and tab/user changes
   useEffect(() => {
@@ -201,7 +224,7 @@ export function EnterpriseUsersPage() {
         )}
 
         {/* Entities Tab */}
-        {activeTab === 'entities' && (
+        {activeTab === 'entities' && !isFeatureEnabled('retireEntitiesTab', false) && (
           <ErrorBoundary
             fallback={({ error, resetError }) => (
               <div className="p-8 text-center">

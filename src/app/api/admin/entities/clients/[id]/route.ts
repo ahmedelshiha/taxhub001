@@ -4,16 +4,24 @@ import { withTenantContext } from '@/lib/api-wrapper'
 import { requireTenantContext } from '@/lib/tenant-utils'
 import { hasPermission, PERMISSIONS } from '@/lib/permissions'
 
+const addDeprecationHeaders = (response: NextResponse) => {
+  response.headers.set('Deprecation', 'true')
+  response.headers.set('Sunset', new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toUTCString())
+  response.headers.set('Link', '</api/admin/users>; rel="successor"')
+  response.headers.set('X-API-Warn', 'This endpoint is deprecated. Please use /api/admin/users instead.')
+  return response
+}
+
 export const GET = withTenantContext(async (req: Request, { params }: { params: { id: string } }) => {
   try {
     const ctx = requireTenantContext()
     const role = ctx.role ?? undefined
     if (!hasPermission(role, PERMISSIONS.USERS_VIEW)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
     }
 
     if (!ctx.tenantId) {
-      return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Tenant context missing' }, { status: 400 }))
     }
 
     const client = await prisma.user.findFirst({
@@ -32,10 +40,10 @@ export const GET = withTenantContext(async (req: Request, { params }: { params: 
     })
 
     if (!client) {
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Client not found' }, { status: 404 }))
     }
 
-    return NextResponse.json(client)
+    return addDeprecationHeaders(NextResponse.json(client))
   } catch (err) {
     console.error('GET /api/admin/entities/clients/[id] error', err)
     return NextResponse.json({ error: 'Failed to fetch client' }, { status: 500 })
@@ -47,11 +55,11 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
     const ctx = requireTenantContext()
     const role = ctx.role ?? undefined
     if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
     }
 
     if (!ctx.tenantId) {
-      return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Tenant context missing' }, { status: 400 }))
     }
 
     const body = await req.json().catch(() => ({}))
@@ -66,7 +74,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
     })
 
     if (!client) {
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Client not found' }, { status: 404 }))
     }
 
     // Check if new email is available (if changed)
@@ -75,7 +83,7 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
         where: { tenantId_email: { tenantId: ctx.tenantId, email } },
       })
       if (existing) {
-        return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
+        return addDeprecationHeaders(NextResponse.json({ error: 'Email already in use' }, { status: 409 }))
       }
     }
 
@@ -94,10 +102,10 @@ export const PATCH = withTenantContext(async (req: Request, { params }: { params
       },
     })
 
-    return NextResponse.json(updated)
+    return addDeprecationHeaders(NextResponse.json(updated))
   } catch (err) {
     console.error('PATCH /api/admin/entities/clients/[id] error', err)
-    return NextResponse.json({ error: 'Failed to update client' }, { status: 500 })
+    return addDeprecationHeaders(NextResponse.json({ error: 'Failed to update client' }, { status: 500 }))
   }
 })
 
@@ -106,11 +114,11 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
     const ctx = requireTenantContext()
     const role = ctx.role ?? undefined
     if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
     }
 
     if (!ctx.tenantId) {
-      return NextResponse.json({ error: 'Tenant context missing' }, { status: 400 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Tenant context missing' }, { status: 400 }))
     }
 
     const client = await prisma.user.findFirst({
@@ -122,16 +130,16 @@ export const DELETE = withTenantContext(async (req: Request, { params }: { param
     })
 
     if (!client) {
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+      return addDeprecationHeaders(NextResponse.json({ error: 'Client not found' }, { status: 404 }))
     }
 
     await prisma.user.delete({
       where: { id: params.id },
     })
 
-    return NextResponse.json({ success: true })
+    return addDeprecationHeaders(NextResponse.json({ success: true }))
   } catch (err) {
     console.error('DELETE /api/admin/entities/clients/[id] error', err)
-    return NextResponse.json({ error: 'Failed to delete client' }, { status: 500 })
+    return addDeprecationHeaders(NextResponse.json({ error: 'Failed to delete client' }, { status: 500 }))
   }
 })
