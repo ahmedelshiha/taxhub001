@@ -82,7 +82,7 @@ const UserRow = memo(function UserRow({
   }
 
   return (
-    <div className="grid grid-cols-[40px_2fr_2fr_1fr_1fr_80px] items-center gap-4 px-4 py-3 border-b hover:bg-gray-50 transition-colors">
+    <div className="grid grid-cols-[40px_2fr_2fr_1fr_1fr_80px] items-center gap-4 px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors">
       {/* Checkbox */}
       <div className="flex items-center justify-center">
         <Checkbox
