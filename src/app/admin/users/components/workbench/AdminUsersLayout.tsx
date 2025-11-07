@@ -52,7 +52,7 @@ export default function AdminUsersLayout() {
   return (
     <div className="admin-workbench-container">
       {/* Sticky Header - Builder.io slot with fallback */}
-      <header className="admin-workbench-header">
+      <header className="admin-workbench-header" role="banner" data-testid="admin-workbench-header">
         {isBuilderEnabled ? <BuilderHeaderSlot /> : <QuickActionsBar />}
       </header>
 
