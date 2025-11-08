@@ -197,26 +197,74 @@ const UserRow = memo(function UserRow({
             <DropdownMenuItem onClick={() => onResetPassword?.(user.email || '')}>
               Reset Password
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={async () => {
-              const roles = ['ADMIN','EDITOR','VIEWER','TEAM_LEAD','TEAM_MEMBER','STAFF','CLIENT']
-              const current = user.role || 'VIEWER'
-              const choice = window.prompt(`Change role for ${user.name} (current: ${current}). Enter one of: ${roles.join(',')}`)
-              if (!choice) return
-              const trimmed = choice.trim().toUpperCase()
-              if (!roles.includes(trimmed)) { alert('Invalid role'); return }
-              try { await onRoleChange?.(user.id, trimmed as any) } catch (e) { console.error(e); alert('Failed to update role') }
-            }}>
+            <DropdownMenuItem onClick={() => { setSelectedRole(user.role || 'VIEWER'); setIsRoleDialogOpen(true) }}>
               Change Role
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600" onClick={async () => {
-              if (!confirm(`Delete ${user.name || user.email}? This cannot be undone.`)) return
-              try { await onDeleteUser?.(user.id) } catch (e) { console.error(e); alert('Failed to delete user') }
-            }}>
+            <DropdownMenuItem className="text-red-600" onClick={() => setIsDeleteDialogOpen(true)}>
               Delete User
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Role change dialog */}
+      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Role</DialogTitle>
+            <DialogDescription>Assign a new role to {user.name}</DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4">
+            <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as any)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((r) => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              try {
+                await onRoleChange?.(user.id, selectedRole)
+                setIsRoleDialogOpen(false)
+              } catch (e) {
+                console.error(e)
+                alert('Failed to change role')
+              }
+            }}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to delete {user.name || user.email}? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => {
+              try {
+                await onDeleteUser?.(user.id)
+                setIsDeleteDialogOpen(false)
+              } catch (e) {
+                console.error(e)
+                alert('Failed to delete user')
+              }
+            }}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 })
