@@ -119,6 +119,26 @@ export default function CommentsPanel({ taskId }: { taskId: string }) {
           <Button onClick={() => postComment(null)}>Post Comment</Button>
         </div>
       </div>
+
+      {/* Reply Dialog */}
+      <Dialog open={isReplyOpen} onOpenChange={setIsReplyOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reply</DialogTitle>
+            <DialogDescription>Write your reply</DialogDescription>
+          </DialogHeader>
+
+          <div className="p-4">
+            <Textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder="Your reply..." />
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReplyOpen(false)}>Cancel</Button>
+            <Button onClick={submitReply} disabled={!replyText.trim()}>Send</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }
