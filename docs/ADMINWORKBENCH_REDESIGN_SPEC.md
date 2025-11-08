@@ -158,7 +158,7 @@ This document provides:
 │  Role:   [All ▼]                │                              │
 │  Status: [All ▼]                │                              │
 │                                  │                              │
-├─────────────────────────���────────┴──────────────────────────────┤
+├──────────────────────────────────┴──────────────────────────────┤
 │ Status: [Active ▼]     [Apply Changes]   [3 users selected]     │ ← Bulk Ops Footer
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -491,12 +491,12 @@ This document provides:
 │                                                         │
 ├────���────────────────────────────────────────────────────┤
 │ [Total Users: 6] [Pending: 0] [In Progress: 6] [Due: 0] │ ← 4 cards, dark bg
-├───���──────────────────────────────────────────────��──────┤
+├──────────────────────────────────────────────────��──────┤
 │ User Directory (minimal rows shown)                      │
 │ ┌─────────────────────────────────────────────────────┐ │
 │ │ Name         | Email         | Role   | Status | ... │ │
 │ │ John Doe     | john@...      | Admin  | Active | ... │ │
-│ └─────────────────────────────────────────────────────┘ │
+│ └────────────────────────────────────��────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -523,7 +523,7 @@ This document provides:
 │                      │ │ Emily │ emily@ │ Edit. │Active │...│  │
 │                      │ │ Mike  │ mike@  │ Admin │Active │...│  │
 │                      │ │ Sophia│ sophia@│ View. │Inact │...│  │
-│                      │ └─────────────────────────────────────┘  │
+│                      │ └───────────────────────���─────────────┘  │
 ├──────────────────────┴───────────────────────────────────────────┤
 │ Status: Active ▼  [Apply Changes]  [3 users selected]            │ ← Sticky footer
 └──────────────────────────────────────────────────────────────────┘
@@ -548,7 +548,7 @@ This document provides:
 | **Export Button** | In sidebar dropdown | ✅ White outline | ⚠️ Location change | Move to header |
 | **Refresh Button** | Missing | ✅ Ghost icon button | ❌ Missing | Add new button |
 | **Audit Trail Button** | Gear icon in sidebar | ✅ Settings icon | ⚠️ Location change | Move to header |
-| **Shadow** | Subtle (shadow-sm) | Medium shadow visible | ���️ Elevation | Increase shadow depth |
+| **Shadow** | Subtle (shadow-sm) | Medium shadow visible | ⚠️ Elevation | Increase shadow depth |
 
 **Color Scheme:**
 - Header: `bg-blue-600` (or `#1F55D4`)
@@ -1295,7 +1295,7 @@ export default function AdminSidebar({ onFilterChange, onClose }) {
 - bg-gray-900 → bg-white
 - bg-gray-800 → bg-gray-50 (hover)
 - text-gray-100 → text-gray-900
-- border-gray-700 → border-gray-200
+- border-gray-700 ��� border-gray-200
 
 /* Status badge colors */
 - Active: bg-green-100 text-green-800 border border-green-300
@@ -2006,14 +2006,31 @@ This section documents the User Directory table features analyzed from the targe
      - Red-600 = #dc2626 (darker red border) ✅
 
 5. **Verify Role Badges**
-   - [ ] Admin: Red background (#fca5a5) with red text (#991b1b)
-   - [ ] Editor: Blue background (#bfdbfe) with blue text (#1e40af)
-   - [ ] Viewer: Green background (#bbf7d0) with green text (#065f46)
-   - [ ] Team Lead: Purple background (#d8b4fe) with purple text (#6b21a8)
-   - [ ] Team Member: Blue background (#bfdbfe) with blue text (#1e40af)
-   - [ ] Staff: Cyan background (#a5f3fc) with cyan text (#0e7490)
-   - [ ] Client: Emerald background (#a7f3d0) with emerald text (#065f46)
+   - [x] Admin: Red background with red text
+   - [x] Editor: Blue background with blue text
+   - [x] Viewer: Green background with green text
+   - [x] Team Lead: Purple background with purple text
+   - [x] Team Member: Blue background with blue text
+   - [x] Staff: Cyan background with cyan text
+   - [x] Client: Emerald background with emerald text
    - **File:** `src/app/admin/users/components/UserRow.tsx`
+   - **Status:** ✅ COMPLETED
+   - **Implementation Details:**
+     - Role color mapping function: `getRoleColor(role)`
+     - Default styling: `inline-flex items-center px-2 py-1 text-xs font-medium rounded`
+     - Color mapping:
+       1. ADMIN: `bg-red-100 text-red-800` (red) ✅
+       2. EDITOR: `bg-blue-100 text-blue-800` (blue) ✅
+       3. VIEWER: `bg-green-100 text-green-800` (green) ✅
+       4. TEAM_LEAD: `bg-purple-100 text-purple-800` (purple) ✅
+       5. TEAM_MEMBER: `bg-blue-100 text-blue-800` (blue) ✅
+       6. STAFF: `bg-cyan-100 text-cyan-800` (cyan) ✅
+       7. CLIENT: `bg-emerald-100 text-emerald-800` (emerald) ✅
+     - Default fallback: `bg-gray-100 text-gray-800` (gray for unknown roles)
+     - Padding: 4px 8px (px-2 py-1)
+     - Font size: 12px (text-xs)
+     - Font weight: 500 (medium)
+     - Border radius: 4px (rounded)
 
 #### Row Selection & Actions (3 items)
 
