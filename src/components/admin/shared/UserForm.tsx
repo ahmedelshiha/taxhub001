@@ -50,7 +50,7 @@ interface UserFormProps {
   showPasswordGeneration?: boolean
 }
 
-export const UserForm = React.forwardRef<HTMLDivElement, UserFormProps>(
+export const UserForm = React.forwardRef<HTMLFormElement, UserFormProps>(
   function UserForm({
     mode = 'create',
     initialData,
