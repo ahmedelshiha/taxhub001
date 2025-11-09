@@ -25,9 +25,9 @@ export const GET = withTenantContext(async (request: Request) => {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
     }
 
-    const role = ctx.role ?? ''
+    const userRole = ctx.role ?? ''
     if (!ctx.userId) return respond.unauthorized()
-    if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
+    if (!hasPermission(userRole, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
 
     try {
       // Parse pagination and filter parameters
@@ -38,7 +38,7 @@ export const GET = withTenantContext(async (request: Request) => {
 
       // Parse filter parameters
       const search = searchParams.get('search')?.trim() || undefined
-      const role = searchParams.get('role')?.trim() || undefined
+      const roleFilter = searchParams.get('role')?.trim() || undefined
       const status = searchParams.get('status')?.trim() || undefined
       const tier = searchParams.get('tier')?.trim() || undefined
       const department = searchParams.get('department')?.trim() || undefined
@@ -57,8 +57,8 @@ export const GET = withTenantContext(async (request: Request) => {
       }
 
       // Add role filter
-      if (role && role !== 'ALL') {
-        whereClause.role = role
+      if (roleFilter && roleFilter !== 'ALL') {
+        whereClause.role = roleFilter
       }
 
       // Add availability status filter
@@ -191,7 +191,7 @@ export const GET = withTenantContext(async (request: Request) => {
           },
           filters: {
             search: search || undefined,
-            role: role || undefined,
+            role: roleFilter || undefined,
             status: status || undefined,
             tier: tier || undefined,
             department: department || undefined,
@@ -257,9 +257,9 @@ export const POST = withTenantContext(async (request: NextRequest) => {
   const tenantId = ctx.tenantId ?? null
 
   try {
-    const role = ctx.role ?? ''
+    const userRole = ctx.role ?? ''
     if (!ctx.userId) return respond.unauthorized()
-    if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
+    if (!hasPermission(userRole, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
 
     const hasDb = Boolean(process.env.NETLIFY_DATABASE_URL)
     if (!hasDb) {
