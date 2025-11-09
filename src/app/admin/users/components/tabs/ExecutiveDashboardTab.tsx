@@ -19,8 +19,9 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { useDashboardMetrics, useDashboardRecommendations, useDashboardAnalytics } from '../../hooks/useDashboardMetrics'
-import { UserItem } from '../../contexts/UsersContextProvider'
+import { useDashboardMetrics, useDashboardRecommendations, useDashboardAnalytics, useFilterUsers, useServerSideFiltering } from '../../hooks'
+import { UserItem, useUsersContext } from '../../contexts/UsersContextProvider'
+import { UserProfileDialog } from '../UserProfileDialog'
 import { toast } from 'sonner'
 
 interface ExecutiveDashboardTabProps {
@@ -36,7 +37,7 @@ interface ExecutiveDashboardTabProps {
 
 /**
  * Executive Dashboard Tab
- * 
+ *
  * Enhanced dashboard with:
  * - Real-time KPI metrics (Total Users, Active Users, etc.)
  * - AI-powered recommendations
@@ -53,6 +54,7 @@ export function ExecutiveDashboardTab({
   onExport,
   onRefresh
 }: ExecutiveDashboardTabProps) {
+  const context = useUsersContext()
   const { data: metricsData, isLoading: metricsLoading } = useDashboardMetrics()
   const { data: recommendations, isLoading: recsLoading } = useDashboardRecommendations()
   const { data: analyticsData, isLoading: analyticsLoading } = useDashboardAnalytics()
@@ -70,30 +72,57 @@ export function ExecutiveDashboardTab({
   const [bulkActionType, setBulkActionType] = useState<string>('')
   const [bulkActionValue, setBulkActionValue] = useState<string>('')
   const [isApplyingBulkAction, setIsApplyingBulkAction] = useState(false)
+  const [activeSavedView, setActiveSavedView] = useState<string>('all')
 
   const handleRefreshDashboard = () => {
     onRefresh?.()
   }
 
-  // Filter users based on active filters
-  const filteredUsers = users.filter((user) => {
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
-      const matchesSearch =
-        user.name?.toLowerCase().includes(searchLower) ||
-        user.email?.toLowerCase().includes(searchLower) ||
-        user.id?.toLowerCase().includes(searchLower)
-      if (!matchesSearch) return false
-    }
-    if (filters.role && user.role !== filters.role) {
-      return false
-    }
-    if (filters.status) {
-      const userStatus = user.status || (user.isActive ? 'ACTIVE' : 'INACTIVE')
-      if (userStatus !== filters.status) return false
-    }
-    return true
+  const handleApplySavedView = (viewName: string, roleFilter?: string) => {
+    setActiveSavedView(viewName)
+    setFilters(prev => ({
+      ...prev,
+      role: roleFilter ? (roleFilter as any) : undefined,
+      search: '',
+      status: undefined,
+      department: undefined,
+      dateRange: 'all'
+    }))
+  }
+
+  // Determine if we have active filters
+  const hasActiveFilters = Boolean(
+    filters.search ||
+    filters.role ||
+    filters.status ||
+    filters.department
+  )
+
+  // Use server-side filtering when filters are active (Phase 4.3 optimization)
+  const serverFiltering = useServerSideFiltering(
+    {
+      search: filters.search,
+      role: filters.role,
+      status: filters.status,
+      department: filters.department,
+      page: 1,
+      limit: 100,
+      sortBy: 'createdAt',
+      sortOrder: 'desc'
+    },
+    { enabled: hasActiveFilters, debounceMs: 300 }
+  )
+
+  // Use client-side filtering as fallback when no active filters (faster for initial load)
+  const clientFilteredUsers = useFilterUsers(users, {
+    search: filters.search,
+    role: filters.role,
+    status: filters.status,
+    department: filters.department
   })
+
+  // Choose the appropriate filtered users based on filter status
+  const filteredUsers = hasActiveFilters ? serverFiltering.data : clientFilteredUsers
 
   const displayMetrics: OperationsMetrics = stats || {
     totalUsers: users.length,
@@ -217,21 +246,53 @@ export function ExecutiveDashboardTab({
               <OperationsOverviewCards metrics={displayMetrics} isLoading={isLoading} />
             </section>
 
+            {/* Saved Views & Role Presets */}
+            <section role="region" aria-label="Saved views" className="max-w-7xl mx-auto w-full">
+              <div className="flex flex-wrap gap-2 mb-6">
+                <Button
+                  variant={activeSavedView === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleApplySavedView('all')}
+                  className="gap-2"
+                >
+                  <span>👥</span> All Users
+                </Button>
+                <Button
+                  variant={activeSavedView === 'clients' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleApplySavedView('clients', 'CLIENT')}
+                  className="gap-2"
+                >
+                  <span>🏢</span> Clients
+                </Button>
+                <Button
+                  variant={activeSavedView === 'team' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleApplySavedView('team', 'TEAM_MEMBER')}
+                  className="gap-2"
+                >
+                  <span>👨‍💼</span> Team
+                </Button>
+                <Button
+                  variant={activeSavedView === 'admins' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleApplySavedView('admins', 'ADMIN')}
+                  className="gap-2"
+                >
+                  <span>🔐</span> Admins
+                </Button>
+              </div>
+            </section>
+
             {/* Filters Section */}
             <section role="region" aria-label="User filters" className="max-w-7xl mx-auto w-full">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">User Directory</h2>
               <AdvancedUserFilters
                 filters={filters}
                 onFiltersChange={setFilters}
-                onReset={() =>
-                  setFilters({
-                    search: '',
-                    role: undefined,
-                    status: undefined,
-                    department: undefined,
-                    dateRange: 'all'
-                  })
-                }
+                onReset={() => {
+                  handleApplySavedView('all')
+                }}
               />
             </section>
 
@@ -344,13 +405,19 @@ export function ExecutiveDashboardTab({
                   selectedUserIds={selectedUserIds}
                   onSelectUser={handleSelectUser}
                   onSelectAll={handleSelectAll}
-                  onViewProfile={() => {}}
+                  onViewProfile={(user) => {
+                    context.setSelectedUser(user)
+                    context.setProfileOpen(true)
+                  }}
                 />
               </div>
             </section>
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* User Profile Dialog */}
+      <UserProfileDialog />
     </div>
   )
 }

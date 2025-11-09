@@ -766,7 +766,7 @@ const RoleDetailsForm = memo(function RoleDetailsForm({
         <div className="p-3 md:p-4 rounded-lg bg-blue-50 border border-blue-200">
           <p className="text-xs md:text-sm text-blue-900 font-medium mb-2">Next Step</p>
           <p className="text-xs md:text-sm text-blue-800">
-            Switch to the "Permissions" tab to select which permissions this role should have.
+            Switch to the &quot;Permissions&quot; tab to select which permissions this role should have.
           </p>
         </div>
       </div>

@@ -12,6 +12,40 @@ import { respond } from '@/lib/api-response'
 
 export const runtime = 'nodejs'
 
+export const GET = withTenantContext(async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  try {
+    const ctx = requireTenantContext()
+    const role = ctx.role ?? ''
+    if (!ctx.userId) return respond.unauthorized()
+    if (!hasPermission(role, PERMISSIONS.USERS_VIEW)) return respond.forbidden('Forbidden')
+
+    const { id } = await context.params
+    const tenantId = ctx.tenantId
+
+    const user = await prisma.user.findFirst({
+      where: { id, ...(tenantFilter(tenantId) as any) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, data: user })
+  } catch (error) {
+    console.error('Error fetching user:', error)
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
+  }
+})
+
 export const PATCH = withTenantContext(async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const ctx = requireTenantContext()
@@ -64,6 +98,20 @@ export const PATCH = withTenantContext(async (request: NextRequest, context: { p
       data,
       select: { id: true, name: true, email: true, role: true, createdAt: true }
     })
+
+    // Emit real-time event for user update
+    try {
+      const changedFields = Object.keys(data)
+      realtimeService.emitUserUpdated(id, {
+        action: 'updated',
+        userEmail: updated.email,
+        userName: updated.name,
+        userRole: updated.role,
+        changedFields
+      })
+    } catch (err) {
+      console.error('Failed to emit user updated event:', err)
+    }
 
     if (parsed.data.role !== undefined && oldUser?.role !== parsed.data.role) {
       // Log role change to comprehensive audit trail
@@ -148,5 +196,75 @@ export const PATCH = withTenantContext(async (request: NextRequest, context: { p
   } catch (error) {
     console.error('Error updating user:', error)
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 })
+  }
+})
+
+export const DELETE = withTenantContext(async (request: NextRequest, context: { params: Promise<{ id: string }> }) => {
+  try {
+    const ctx = requireTenantContext()
+    const role = ctx.role ?? ''
+    if (!ctx.userId) return respond.unauthorized()
+    if (!hasPermission(role, PERMISSIONS.USERS_MANAGE)) return respond.forbidden('Forbidden')
+
+    const { id } = await context.params
+    const tenantId = ctx.tenantId
+
+    const existing = await prisma.user.findFirst({
+      where: { id, ...(tenantFilter(tenantId) as any) },
+      select: { id: true, email: true, name: true }
+    })
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
+    const ip = getClientIp(request as unknown as Request)
+
+    // Delete the user
+    await prisma.user.delete({ where: { id } })
+
+    // Emit real-time event for user deletion
+    try {
+      realtimeService.emitUserDeleted(id, {
+        action: 'deleted',
+        userEmail: existing.email,
+        userName: existing.name
+      })
+    } catch (err) {
+      console.error('Failed to emit user deleted event:', err)
+    }
+
+    // Log deletion
+    try {
+      if (tenantId) {
+        await AuditLogService.createAuditLog({
+          tenantId: tenantId,
+          userId: ctx.userId,
+          action: 'user.delete',
+          resource: `user:${id}`,
+          metadata: {
+            targetUserId: id,
+            targetEmail: existing.email,
+            targetName: existing.name,
+            timestamp: new Date().toISOString()
+          },
+          ipAddress: ip,
+          userAgent: request.headers.get('user-agent') || undefined
+        })
+      }
+    } catch (auditError) {
+      console.error('Failed to create audit log for user deletion:', auditError)
+      await logAudit({
+        action: 'user.delete',
+        actorId: ctx.userId,
+        targetId: id,
+        details: { email: existing.email }
+      })
+    }
+
+    return NextResponse.json({ success: true, id })
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    return NextResponse.json({ error: 'Failed to delete user' }, { status: 500 })
   }
 })

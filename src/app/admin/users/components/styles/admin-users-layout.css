@@ -1,0 +1,261 @@
+/**
+ * AdminWorkBench Layout Styles
+ *
+ * Responsive grid layout for the new user management dashboard.
+ * Light theme color palette for production deployment.
+ *
+ * Color Palette:
+ * - Primary Blue Header: #1f55d4
+ * - White backgrounds: #ffffff
+ * - Light gray backgrounds: #f9fafb, #f3f4f6
+ * - Gray borders: #e5e7eb
+ * - Text primary: #111827
+ * - Text secondary: #6b7280
+ *
+ * Breakpoints:
+ * - Desktop: ≥1400px (3-column layout: sidebar | main | fixed width)
+ * - Tablet: 768px-1399px (sidebar hidden, drawer toggle)
+ * - Mobile: <768px (full-width, sidebar as drawer)
+ */
+
+/* ============================================================================
+   ROOT CONTAINER - Main Grid Layout
+   ============================================================================ */
+
+.admin-workbench-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================================================
+   HEADER - Sticky Top
+   ============================================================================ */
+
+.admin-workbench-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: #1f55d4;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   MAIN CONTENT AREA - Flex Container
+   ============================================================================ */
+
+.admin-workbench-main {
+  display: flex;
+  flex: 1;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   SIDEBAR - Left Panel (Analytics + Filters)
+   ============================================================================ */
+
+.admin-workbench-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.admin-workbench-sidebar.closed {
+  display: none;
+}
+
+.admin-workbench-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-workbench-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-workbench-sidebar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
+}
+
+/* ============================================================================
+   CONTENT - Main Area with KPI Cards + Directory
+   ============================================================================ */
+
+.admin-workbench-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ============================================================================
+   METRICS - KPI Cards Grid
+   ============================================================================ */
+
+.admin-workbench-metrics {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   DIRECTORY - User List Section
+   ============================================================================ */
+
+.admin-workbench-directory {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Ensure table container takes full available space */
+.admin-workbench-directory > * {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================================
+   FOOTER - Sticky Bottom (Bulk Actions)
+   ============================================================================ */
+
+.admin-workbench-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   TABLET LAYOUT (768px - 1399px)
+   ============================================================================ */
+
+@media (max-width: 1399px) {
+  .admin-workbench-sidebar {
+    display: none;
+  }
+
+  .admin-workbench-sidebar.open {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    width: 280px;
+    height: 100vh;
+    border-radius: 0;
+    margin-top: 0;
+    display: flex;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-workbench-main {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   MOBILE LAYOUT (<768px)
+   ============================================================================ */
+
+@media (max-width: 767px) {
+  .admin-workbench-container {
+    height: 100%;
+  }
+
+  .admin-workbench-main {
+    padding: 0.5rem;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  .admin-workbench-content {
+    gap: 0.5rem;
+  }
+
+  .admin-workbench-sidebar {
+    display: none;
+  }
+
+  .admin-workbench-sidebar.open {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    max-width: 280px;
+    height: 100vh;
+    border-radius: 0;
+    display: flex;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .admin-workbench-metrics {
+    padding: 0.75rem;
+  }
+}
+
+/* ============================================================================
+   SCROLLING & OVERFLOW BEHAVIOR
+   ============================================================================ */
+
+.admin-workbench-content {
+  /* Ensure proper scrolling context */
+  position: relative;
+}
+
+/* ============================================================================
+   LIGHT THEME COLORS (Always use light theme)
+   ============================================================================ */
+
+/* All components use light theme colors - no dark mode support for now */
+
+/* ============================================================================
+   ANIMATION & TRANSITIONS
+   ============================================================================ */
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-workbench-sidebar {
+    transition: none;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.admin-workbench-container *:focus-visible {
+  outline: 2px solid #1f55d4;
+  outline-offset: 2px;
+}

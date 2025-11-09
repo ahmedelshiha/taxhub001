@@ -98,7 +98,7 @@ export default function DataTable<T extends { id?: string | number }>({ columns,
                     return (
                       <button
                         key={i}
-                        onClick={() => a.handler(row)}
+                        onClick={() => (a.handler || a.onClick)(row)}
                         disabled={isDisabled}
                         className="flex-1 text-xs py-2 px-3 rounded border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >

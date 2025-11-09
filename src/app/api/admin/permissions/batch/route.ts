@@ -75,12 +75,12 @@ function analyzeRemovalConflicts(
   // Check for permission dependencies (if permission X requires Y, but we're removing Y)
   for (const removed of removedPermissions) {
     // Common dependency patterns to check
-    const dependencyMap: Record<string, Permission[]> = {
-      'users.edit': ['users.view'],
-      'users.delete': ['users.view', 'users.edit'],
-      'roles.edit': ['roles.view'],
-      'roles.delete': ['roles.view', 'roles.edit'],
-      'permissions.manage': ['permissions.view'],
+    const dependencyMap: Record<string, string[]> = {
+      'users.manage': ['users.view'],
+      'users.view': [],
+      'roles.manage': ['roles.view'],
+      'roles.view': [],
+      'permissions.manage': [],
     }
 
     // Check if any remaining permissions depend on the removed one
@@ -232,7 +232,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BatchPerm
     const userRoleChanges: Record<string, string> = {}
 
     for (const targetUser of targetUsers) {
-      let newRole = roleChange?.to || targetUser.role
+      const newRole = roleChange?.to || targetUser.role
       let newPermissions = roleChange?.to
         ? getRolePermissions(newRole)
         : getRolePermissions(targetUser.role)

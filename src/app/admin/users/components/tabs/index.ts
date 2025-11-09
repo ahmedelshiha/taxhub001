@@ -2,7 +2,6 @@
 // Phase 4: Enterprise Redesign Implementation
 
 export { ExecutiveDashboardTab } from './ExecutiveDashboardTab'
-export { EntitiesTab } from './EntitiesTab'
 export { WorkflowsTab } from './WorkflowsTab'
 export { BulkOperationsTab } from './BulkOperationsTab'
 export { AuditTab } from './AuditTab'

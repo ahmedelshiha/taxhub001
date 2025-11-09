@@ -12,11 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ChevronDown, X } from 'lucide-react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 export interface UserFilters {
   search: string
@@ -87,11 +83,11 @@ export function AdvancedUserFilters({
   const [isOpen, setIsOpen] = useState(!isMobile)
   
   const hasActiveFilters =
-    filters.search ||
-    filters.role ||
-    filters.status ||
-    filters.department ||
-    (filters.dateRange && filters.dateRange !== 'all')
+    !!filters.search ||
+    !!filters.role ||
+    !!filters.status ||
+    !!filters.department ||
+    (filters.dateRange !== undefined && filters.dateRange !== 'all')
   
   const activeFilterCount = [
     filters.search ? 1 : 0,
@@ -106,18 +102,16 @@ export function AdvancedUserFilters({
       {/* Mobile: Collapsible header */}
       {isMobile && (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <button className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">🔎 Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </div>
-              <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
+          <CollapsibleTrigger className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 border-none bg-transparent text-left">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-900">🔎 Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {activeFilterCount}
+                </span>
+              )}
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="border-t border-gray-200 p-4 space-y-4">
             <FilterContent
@@ -215,11 +209,11 @@ function FilterContent({
             Role
           </label>
           <Select
-            value={filters.role || ''}
+            value={filters.role || 'ALL_ROLES'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                role: value || undefined
+                role: value === 'ALL_ROLES' ? undefined : value
               })
             }
           >
@@ -227,7 +221,7 @@ function FilterContent({
               <SelectValue placeholder="All Roles" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Roles</SelectItem>
+              <SelectItem value="ALL_ROLES">All Roles</SelectItem>
               {roleOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -243,11 +237,11 @@ function FilterContent({
             Status
           </label>
           <Select
-            value={filters.status || ''}
+            value={filters.status || 'ALL_STATUSES'}
             onValueChange={(value) =>
               onFiltersChange({
                 ...filters,
-                status: value || undefined
+                status: value === 'ALL_STATUSES' ? undefined : value
               })
             }
           >
@@ -255,7 +249,7 @@ function FilterContent({
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="ALL_STATUSES">All Statuses</SelectItem>
               {statusOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -272,11 +266,11 @@ function FilterContent({
               Department
             </label>
             <Select
-              value={filters.department || ''}
+              value={filters.department || 'ALL_DEPARTMENTS'}
               onValueChange={(value) =>
                 onFiltersChange({
                   ...filters,
-                  department: value || undefined
+                  department: value === 'ALL_DEPARTMENTS' ? undefined : value
                 })
               }
             >
@@ -284,7 +278,7 @@ function FilterContent({
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Departments</SelectItem>
+                <SelectItem value="ALL_DEPARTMENTS">All Departments</SelectItem>
                 {departmentOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
                     {opt.label}

@@ -1,15 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { TabNavigation, TabType } from './components/TabNavigation'
+import ExecutiveDashboardTabWrapper from './components/ExecutiveDashboardTabWrapper'
 import {
-  DashboardTab,
-  ExecutiveDashboardTab,
-  EntitiesTab,
-  WorkflowsTab,
-  BulkOperationsTab,
-  AuditTab,
-  AdminTab,
   RbacTab
 } from './components/tabs'
 import { CreateUserModal } from '@/components/admin/shared/CreateUserModal'
@@ -18,6 +12,12 @@ import { ErrorBoundary } from '@/components/providers/error-boundary'
 import { TabSkeleton, DashboardTabSkeleton, MinimalTabSkeleton } from './components/TabSkeleton'
 import { toast } from 'sonner'
 import { performanceMetrics } from '@/lib/performance/metrics'
+
+// Dynamic imports for less-frequently used tabs (reduces initial bundle by ~40KB)
+const WorkflowsTab = lazy(() => import('./components/tabs/WorkflowsTab').then(m => ({ default: m.WorkflowsTab })))
+const BulkOperationsTab = lazy(() => import('./components/tabs/BulkOperationsTab').then(m => ({ default: m.BulkOperationsTab })))
+const AuditTab = lazy(() => import('./components/tabs/AuditTab').then(m => ({ default: m.AuditTab })))
+const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ default: m.AdminTab })))
 
 /**
  * Enterprise Users Page - Phase 4 Implementation
@@ -45,18 +45,31 @@ export function EnterpriseUsersPage() {
   // Performance: start render measure (ended in effects below)
   performanceMetrics.startMeasure('admin-users-page:render')
 
-  // Initialize tab from URL query (?tab=...)
+  const context = useUsersContext()
+
+  // Initialize tab from URL query (?tab=...) and apply role filter (?role=...)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const tab = params.get('tab') as TabType | null
-      const validTabs: TabType[] = ['dashboard', 'entities', 'workflows', 'bulk-operations', 'audit', 'rbac', 'admin']
+      const roleParam = params.get('role') as string | null
+
+      let tabToSet: TabType = 'dashboard'
+      const validTabs: TabType[] = ['dashboard', 'workflows', 'bulk-operations', 'audit', 'rbac', 'admin']
+      const validRoles = ['ALL', 'ADMIN', 'TEAM_LEAD', 'TEAM_MEMBER', 'STAFF', 'CLIENT']
+
       if (tab && (validTabs as string[]).includes(tab)) {
-        setActiveTab(tab)
+        tabToSet = tab
       }
+
+      // Apply role filter if provided in URL
+      if (roleParam && validRoles.includes(roleParam) && context.setRoleFilter) {
+        context.setRoleFilter(roleParam as any)
+      }
+
+      setActiveTab(tabToSet)
     }
   }, [])
-  const context = useUsersContext()
 
   // End render measure on initial mount and tab/user changes
   useEffect(() => {
@@ -64,7 +77,7 @@ export function EnterpriseUsersPage() {
       tab: activeTab,
       users: Array.isArray(context.users) ? context.users.length : 0,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [activeTab, context.users?.length])
 
   // Handler for Add User action
@@ -185,40 +198,7 @@ export function EnterpriseUsersPage() {
             )}
           >
             <Suspense fallback={<DashboardTabSkeleton />}>
-              <ExecutiveDashboardTab
-                users={context.users}
-                stats={context.stats}
-                isLoading={context.usersLoading || context.isLoading}
-                onAddUser={handleAddUser}
-                onImport={handleImport}
-                onBulkOperation={handleBulkOperation}
-                onExport={handleExport}
-                onRefresh={handleRefresh}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        )}
-
-        {/* Entities Tab */}
-        {activeTab === 'entities' && (
-          <ErrorBoundary
-            fallback={({ error, resetError }) => (
-              <div className="p-8 text-center">
-                <div className="inline-block">
-                  <div className="text-red-600 text-lg font-semibold mb-2">Failed to load entities</div>
-                  <p className="text-gray-600 text-sm mb-4">{error?.message}</p>
-                  <button
-                    onClick={resetError}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            )}
-          >
-            <Suspense fallback={<TabSkeleton />}>
-              <EntitiesTab />
+              <ExecutiveDashboardTabWrapper />
             </Suspense>
           </ErrorBoundary>
         )}
