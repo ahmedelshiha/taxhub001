@@ -52,6 +52,11 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     }
 
     const context = tenantContext.getContext()
+
+    if (!context.tenantId) {
+      return NextResponse.json({ error: 'Tenant context is required' }, { status: 400 })
+    }
+
     const hasAccess = await hasPermission(context.userId, PERMISSIONS.USERS_EXPORT)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
