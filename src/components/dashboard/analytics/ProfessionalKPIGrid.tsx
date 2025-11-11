@@ -193,8 +193,8 @@ export default function ProfessionalKPIGrid({ stats }: KPIStatsProps) {
                   {hasAlerts && (
                     <div className="space-y-1">
                       {kpi.alerts.map((alert, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs text-red-600 bg-red-50 rounded p-2">
-                          <AlertTriangle className="h-3 w-3" />
+                        <div key={idx} className="flex items-center gap-1 text-2xs text-red-600 bg-red-50 rounded p-1.5">
+                          <AlertTriangle className="h-2.5 w-2.5 flex-shrink-0" />
                           <span>{alert}</span>
                         </div>
                       ))}
