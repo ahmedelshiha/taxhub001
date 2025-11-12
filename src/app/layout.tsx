@@ -92,8 +92,10 @@ export default async function RootLayout({
     serverTranslations = undefined
   }
 
+  const dir = userLocale === 'ar' ? 'rtl' : 'ltr'
+
   return (
-    <html lang={userLocale}>
+    <html lang={userLocale} dir={dir} className={userLocale === 'ar' ? notoSansArabic.variable : ''}>
       <head>
         <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="icon" href="/next.svg" />
