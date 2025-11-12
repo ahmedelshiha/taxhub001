@@ -609,15 +609,30 @@ Phase 2.4 — Profile & Account Center
   - ARIA labels, keyboard navigation, focus management on all components
   - RTL support verified on all input fields and navigation
 
-Phase 3 — Documents Vault
-- [ ] Uploads pipeline + virus scan + versioning
-- [ ] OCR auto‑tagging and foldering
-- [ ] Link docs to filings/tasks
+Phase 3 — Documents Vault ⚠️ PARTIALLY COMPLETE (50%)
+- [x] Uploads pipeline with AV scanning (src/app/api/uploads/route.ts)
+- [x] Quarantine management (src/app/api/admin/uploads/quarantine/route.ts)
+- [x] Provider abstraction (Netlify, Supabase stubbed) (src/lib/uploads-provider.ts)
+- [x] Cron rescan for errors (src/lib/cron/rescan.ts)
+- [x] Client upload UI (src/components/portal/secure-document-upload.tsx)
+- [x] Document listing UI (src/components/portal/AccountCenter/DocumentsSection.tsx)
+- [ ] Document listing API (GET /api/documents, /api/documents/:id)
+- [ ] Document versioning system
+- [ ] OCR auto‑tagging and extraction
+- [ ] Link docs to filings/tasks integration
 - [ ] E‑sign integration interface
 
-Phase 4 — Messaging & Support
+Phase 4 — Messaging & Support ⚠️ LARGELY COMPLETE (70%)
+- [x] Real-time chat for portal (src/app/api/portal/chat/route.ts)
+- [x] Real-time chat for admin (src/app/api/admin/chat/route.ts)
+- [x] Live chat widget (src/components/portal/LiveChatWidget.tsx)
+- [x] Admin chat console (src/components/admin/chat/AdminChatConsole.tsx)
+- [x] Chat persistence (prisma.ChatMessage)
+- [x] Support tickets UI (src/components/portal/AccountCenter/SupportSection.tsx)
+- [ ] Support tickets database persistence
 - [ ] Case threads tied to filings/tasks with SLA timers
-- [ ] Knowledge base + ticketing
+- [ ] Knowledge base CRUD API
+- [ ] Advanced case management + routing
 - [ ] Live chat integration
 
 Phase 5 — Billing
