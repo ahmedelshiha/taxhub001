@@ -464,6 +464,43 @@ This addendum elevates the portal to enterprise-grade parity with Oracle Fusion/
 - Deliverables
   - Data dictionary, event catalog, approval matrices, rules catalog, sequence diagrams, RACI for operations, runbooks per integration.
 
+## 5B) Current App Inventory & Function Map (from code audit)
+
+Routes (selected)
+- Public: /, /about, /services, /blog, /contact, /login, /register, /forgot-password, /reset-password, /status, /sentry-example-page
+- Portal: /portal, /portal/bookings, /portal/service-requests, /portal/settings, /portal/expenses/scan
+- Admin: /admin with pages for analytics, audits, availability, bookings(+id/new), calendar, chat, clients, compliance, expenses, integrations, invoices(+sequences), monitoring, notifications, payments, perf-metrics, permissions, posts, profile, reminders, reports, security, service-requests(+id/new/edit/list), services(+id/list), settings (company, financial, integrations, languages, localization, security, system, tasks, team, timezones, user-management), shortcuts, tasks(+list/new), taxes, team, users(+list), workflows
+
+API (major groups; many endpoints exist under src/app/api/...)
+- Auth: next-auth, register, mfa enroll/verify/disable; user verification
+- Public/Portal: posts, services(+slug), pricing, currencies, contact, newsletter, portal bookings/chat/realtime/service-requests, uploads
+- Admin: analytics, audit-logs, availability-slots, booking-settings/bookings, bulk-operations, calendar, chat, client/communication/currencies/financial/security/settings, cron-telemetry, export, health/perf metrics, integrations, invoices(+pay), languages, menu customization, org-settings, permissions, realtime, regional-formats, reports, roles, search, sidebar-preferences, system/timezones/thresholds/updates, tasks(+templates/analytics/export/stream), team-management(+assignments/skills/workload), translations(analytics/discover/missing/priority/timeline), uploads quarantine, users(+stats/search/presets/activity/permissions/exports), workflows(+templates/ops/dry-run/simulate)
+- Utilities: analytics/track, cron jobs, currencies/convert, expenses/ingest, payments (checkout/webhook/cod), security health/events, builder-io content
+
+Services layer (src/services)
+- Settings: admin/client/communication/cron-telemetry/financial/integration/security/services/system/team/user-management, booking-settings
+- Domain: services.service, team-member.service, dashboard-metrics, approval-manager, notification-manager, audit-log/logging, bulk-operations, recommendation-engine, workflow builder/designer/executor, entity-relationship
+
+Libraries (src/lib)
+- Auth/RLS/tenant: auth, prisma-rls/tenant-guard, tenant-context/cookie, rbac/permission-engine
+- Internationalization: i18n, server translations, language-registry
+- Security: csrf, rate-limit, ip-allowlist/hash, step-up, mfa
+- Integrations: payments/stripe, cache/redis, uploads-provider, builder-io config
+- Compliance/Tasks: settings/registry, tasks adapters/utils, booking availability/pricing, cron schedulers (exchange/payments/reminders/rescan)
+- Observability: sentry helpers, performance metrics, optimizations, query monitor
+
+Components (selected)
+- Portal: financial-dashboard, secure-document-upload, LiveChatWidget, OfflineQueueInspector
+- Admin: extensive dashboards, analytics, settings shells, tables, forms, layout system
+- UI kit: button, card, dialog, dropdown, select, tabs, etc.
+
+Ops
+- Netlify Functions: cron-payments-reconcile, cron-reminders, cron-translation-metrics, health-monitor, run-tenant-migrations, seed-tenant-defaults
+- Scripts: RLS setup/rollout, migrations/seed utilities, admin-setup scripts, diagnostics (inspect/check/list), i18n tooling
+
+Alignment
+- The existing structure supports our modular plan: we will add portal/business-setup wizard, compliance widgets, and services directory on top of this foundation, reusing services, lib settings/registry, and UI kit.
+
 ## 6) Technical Blueprint
 
 - Stack alignment
