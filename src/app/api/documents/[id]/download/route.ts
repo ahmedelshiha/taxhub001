@@ -38,7 +38,7 @@ async function GET(
         documentId: document.id,
         documentName: document.name,
         documentSize: document.size,
-        downloadedBy: session.user.id,
+        downloadedBy: userId,
       },
     }).catch(() => {})
 
