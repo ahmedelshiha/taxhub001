@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { tenantContext } from "@/lib/tenant-context";
+import { withTenantContext } from "@/lib/api-wrapper";
+import { requireTenantContext } from "@/lib/tenant-utils";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -10,17 +9,17 @@ import { logger } from "@/lib/logger";
  * Get upcoming compliance deadlines for the tenant's entities
  * Supports filtering and pagination
  */
-export async function GET(request: NextRequest) {
+const _api_GET = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const ctx = requireTenantContext();
+    const userId = ctx.userId;
+
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
-
-    const ctx = await tenantContext.getContext();
 
     // Get query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
       where: {
         obligation: {
           entity: {
-            tenantId: ctx.tenantId,
+            tenantId: ctx.tenantId!,
           },
           ...(country && { country }),
           ...(obligationType && { type: obligationType }),
@@ -118,4 +117,6 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+};
+
+export const GET = withTenantContext(_api_GET, { requireAuth: true });
