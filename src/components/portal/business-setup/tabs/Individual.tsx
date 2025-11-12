@@ -74,6 +74,7 @@ export default function IndividualTab({
   });
 
   const selectedCountry = watch("country");
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const onSubmit = async (data: IndividualInput) => {
     try {
