@@ -121,6 +121,5 @@ export const POST = withTenantContext(async (request: NextRequest) => {
         { error: 'Failed to save intake responses' },
         { status: 500 }
       )
-     )
   }
 })
