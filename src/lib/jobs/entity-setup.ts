@@ -1,7 +1,8 @@
 
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { countryRegistry } from "@/lib/registries/countries";
+import { getCountry } from "@/lib/registries/countries";
+import { Redis } from "@upstash/redis";
 
 
 export type VerificationJobStatus = 
@@ -165,7 +166,7 @@ export async function verifyEntityRegistrations(
     for (const registration of entity.registrations) {
       try {
         // Validate identifier format based on country
-        const country = countryRegistry.getCountry(entity.country);
+        const country = getCountry(entity.country);
         const validator = country?.validators[registration.type];
 
         if (validator && validator.validate(registration.value)) {
