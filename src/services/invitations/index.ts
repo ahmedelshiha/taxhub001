@@ -150,13 +150,21 @@ export class InvitationService {
           },
         });
 
-        // Assign role to user
-        await tx.userRole.create({
-          data: {
+        // Assign role to user via TenantMembership
+        await tx.tenantMembership.upsert({
+          where: {
+            userId_tenantId: {
+              userId,
+              tenantId: inv.tenantId,
+            },
+          },
+          create: {
             userId,
             tenantId: inv.tenantId,
-            role: inv.role,
-            assignedBy: 'system',
+            role: inv.role as any, // role is a string from invitation
+          },
+          update: {
+            role: inv.role as any,
           },
         });
 
