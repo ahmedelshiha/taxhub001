@@ -392,7 +392,10 @@ export class ServicesService {
         }
       } catch (e) {
         // swallow and fallback
-        logger.debug('createService: prisma.service.create error', { tenantId: tId }, e instanceof Error ? e : undefined)
+        logger.debug('createService: prisma.service.create error', {
+          tenantId: tId,
+          error: e instanceof Error ? e.message : String(e)
+        })
       }
 
       // Fallback: construct created object if prisma returned nothing (robust for mocked environments)
