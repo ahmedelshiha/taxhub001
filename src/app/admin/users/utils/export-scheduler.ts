@@ -127,7 +127,7 @@ export function calculateNextExecutionTime(schedule: ExportSchedule): Date {
   const now = new Date()
   const [hours, minutes] = (schedule.time || '09:00').split(':').map(Number)
 
-  let nextExecution = new Date(now)
+  const nextExecution = new Date(now)
   nextExecution.setHours(hours, minutes, 0, 0)
 
   // If time has already passed today, move to next occurrence
@@ -488,7 +488,7 @@ export function calculateLastExecutionTime(schedule: ExportSchedule, referenceDa
   const ref = referenceDate || new Date()
   const [hours, minutes] = (schedule.time || '09:00').split(':').map(Number)
 
-  let lastExecution = new Date(ref)
+  const lastExecution = new Date(ref)
   lastExecution.setHours(hours, minutes, 0, 0)
 
   // If execution time hasn't passed today yet, go back one cycle

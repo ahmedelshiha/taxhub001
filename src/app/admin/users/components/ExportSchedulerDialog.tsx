@@ -299,8 +299,8 @@ export function ExportSchedulerDialog({
                   <label className="text-sm font-medium">Day of Month</label>
                   <Input
                     type="number"
-                    min="1"
-                    max="31"
+                    min={1}
+                    max={31}
                     value={dayOfMonth}
                     onChange={e => setDayOfMonth(e.target.value)}
                     className={errors.dayOfMonth ? 'border-red-500' : ''}

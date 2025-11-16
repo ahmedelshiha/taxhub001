@@ -91,6 +91,6 @@ const sentryPluginOptions = {
   disableClientWebpackPlugin: disableSourcemapsOnNetlify,
 }
 
-const configWithSentry = (process.env.NODE_ENV === 'production' && !!process.env.SENTRY_AUTH_TOKEN) ? withSentryConfig(nextConfig, sentryPluginOptions) : nextConfig
+const configWithSentry = (process.env.NODE_ENV === 'production' && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_AUTH_TOKEN !== '') ? withSentryConfig(nextConfig, sentryPluginOptions) : nextConfig
 
 export default configWithSentry

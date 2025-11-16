@@ -295,7 +295,18 @@ export function withTenantContext(
         timestamp: new Date(),
       }
 
-      const res = await tenantContext.run(context, () => handler(request, routeContext))
+      let res: Response | NextResponse
+      try {
+        res = await tenantContext.run(context, () => handler(request, routeContext))
+      } catch (handlerError) {
+        logger.error('Handler failed within tenant context', { error: handlerError, tenantId: context.tenantId, userId: context.userId })
+        return attachRequestId(
+          NextResponse.json(
+            { error: 'Internal Server Error', message: 'Failed to process request' },
+            { status: 500 }
+          )
+        )
+      }
       return attachRequestId(res)
     } catch (error) {
       logger.error('API wrapper error', { error })
