@@ -1,0 +1,146 @@
+/**
+ * Messages API - Ticket Detail
+ * GET /api/messages/tickets/[id] - Get ticket
+ * PATCH /api/messages/tickets/[id] - Update ticket
+ */
+
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { TicketsService } from "@/lib/services/messages/tickets-service";
+import { z } from "zod";
+
+const updateTicketSchema = z.object({
+  title: z.string().min(1).max(200).optional(),
+  description: z.string().max(5000).optional(),
+  category: z
+    .enum([
+      "GENERAL",
+      "TECHNICAL",
+      "BILLING",
+      "ACCOUNT",
+      "FEATURE_REQUEST",
+      "BUG_REPORT",
+      "COMPLIANCE",
+      "TAX",
+      "OTHER",
+    ])
+    .optional(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT", "CRITICAL"]).optional(),
+  status: z
+    .enum([
+      "OPEN",
+      "IN_PROGRESS",
+      "WAITING_ON_CUSTOMER",
+      "WAITING_ON_SUPPORT",
+      "RESOLVED",
+      "CLOSED",
+      "CANCELLED",
+    ])
+    .optional(),
+  assignedToId: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = session.user.tenantId;
+    const ticketId = params.id;
+
+    // Get ticket
+    const ticket = await TicketsService.getTicketById(tenantId, ticketId);
+
+    if (!ticket) {
+      return NextResponse.json(
+        { success: false, error: "Ticket not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: ticket,
+    });
+  } catch (error: any) {
+    console.error("Error fetching ticket:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch ticket",
+        details: error.message,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    // Authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const tenantId = session.user.tenantId;
+    const userId = session.user.id;
+    const ticketId = params.id;
+
+    // Parse and validate request body
+    const body = await request.json();
+    const validation = updateTicketSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Validation error",
+          details: validation.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Update ticket
+    const ticket = await TicketsService.updateTicket(
+      tenantId,
+      ticketId,
+      userId,
+      validation.data
+    );
+
+    return NextResponse.json({
+      success: true,
+      data: ticket,
+      message: "Ticket updated successfully",
+    });
+  } catch (error: any) {
+    console.error("Error updating ticket:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to update ticket",
+        details: error.message,
+      },
+      { status: 500 }
+    );
+  }
+}

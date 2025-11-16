@@ -112,6 +112,10 @@ model User {
   knowledgeBaseArticles     KnowledgeBaseArticle[]  @relation("UserToKnowledgeBaseArticle")
   paymentMethods            UserPaymentMethod[]     @relation("UserToUserPaymentMethod")
   userOnEntities            UserOnEntity[]
+  approvalsRequested        Approval[]              @relation("ApprovalRequester")
+  approvalsToApprove        Approval[]              @relation("ApprovalApprover")
+  approvalsDecided          Approval[]              @relation("ApprovalDecider")
+  approvalHistoryActions    ApprovalHistory[]       @relation("ApprovalHistoryPerformer")
 
   @@unique([tenantId, email])
   @@index([tenantId, role])
@@ -378,6 +382,9 @@ model Tenant {
   mergeLogs             MergeLog[]                        @relation("MergeLogs")
   survivorshipRules     SurvivorshipRule[]                @relation("SurvivorshipRules")
   invitations           Invitation[]
+  bills                 Bill[]
+  approvals             Approval[]
+  approvalHistory       ApprovalHistory[]
 
   @@index([status])
 }
@@ -967,6 +974,7 @@ model Attachment {
   versions         DocumentVersion[]
   links            DocumentLink[]
   auditLogs        DocumentAuditLog[]
+  bills            Bill[]
 
   @@index([serviceRequestId])
   @@index([tenantId])
@@ -2297,6 +2305,7 @@ model Entity {
   taxFilings            TaxFiling[]
   userOnEntities        UserOnEntity[]
   attachments           Attachment[]
+  bills                 Bill[]
 
   @@unique([tenantId, name])
   @@index([tenantId, country])
@@ -2968,4 +2977,179 @@ enum SurvivorshipStrategy {
   MANUAL
   AUTOMATIC
   RULE_BASED
+}
+
+
+// Bills Management
+model Bill {
+  id                String      @id @default(cuid())
+  tenantId          String
+  entityId          String?
+  
+  // Basic info
+  billNumber        String?
+  vendor            String
+  amount            Float
+  currency          String      @default("USD")
+  date              DateTime
+  dueDate           DateTime?
+  
+  // Status
+  status            BillStatus  @default(PENDING)
+  approvedBy        String?
+  approvedAt        DateTime?
+  
+  // OCR data
+  ocrStatus         OcrStatus   @default(PENDING)
+  ocrData           Json?
+  ocrConfidence     Float?
+  
+  // Attachments
+  attachmentId      String?
+  attachment        Attachment? @relation(fields: [attachmentId], references: [id])
+  
+  // Metadata
+  category          String?
+  description       String?
+  notes             String?
+  tags              String[]
+  
+  // Timestamps
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Relations
+  tenant            Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  entity            Entity?     @relation(fields: [entityId], references: [id], onDelete: SetNull)
+  
+  @@index([tenantId, status])
+  @@index([tenantId, date])
+  @@index([tenantId, vendor])
+  @@index([attachmentId])
+  @@map("bills")
+}
+
+enum BillStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum OcrStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+
+// Approvals Management
+model Approval {
+  id                String          @id @default(cuid())
+  tenantId          String
+  
+  // Item reference
+  itemType          ApprovalItemType
+  itemId            String
+  itemData          Json?
+  
+  // Requester
+  requesterId       String
+  requesterName     String?
+  requestedAt       DateTime        @default(now())
+  
+  // Approver
+  approverId        String
+  approverName      String?
+  
+  // Status
+  status            ApprovalStatus  @default(PENDING)
+  priority          ApprovalPriority @default(NORMAL)
+  
+  // Decision
+  decision          String?
+  decisionAt        DateTime?
+  decisionBy        String?
+  decisionNotes     String?
+  
+  // Workflow
+  workflowId        String?
+  workflowStep      Int?            @default(1)
+  totalSteps        Int?            @default(1)
+  
+  // Metadata
+  reason            String?
+  notes             String?
+  tags              String[]
+  metadata          Json?
+  
+  // Timestamps
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  expiresAt         DateTime?
+  
+  // Relations
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  requester         User            @relation("ApprovalRequester", fields: [requesterId], references: [id])
+  approver          User            @relation("ApprovalApprover", fields: [approverId], references: [id])
+  decider           User?           @relation("ApprovalDecider", fields: [decisionBy], references: [id])
+  history           ApprovalHistory[]
+  
+  @@index([tenantId, status])
+  @@index([tenantId, approverId, status])
+  @@index([tenantId, itemType, itemId])
+  @@index([expiresAt])
+  @@map("approvals")
+}
+
+model ApprovalHistory {
+  id                String          @id @default(cuid())
+  approvalId        String
+  tenantId          String
+  
+  action            String
+  performedBy       String
+  performedAt       DateTime        @default(now())
+  
+  fromStatus        ApprovalStatus?
+  toStatus          ApprovalStatus?
+  
+  notes             String?
+  metadata          Json?
+  
+  approval          Approval        @relation(fields: [approvalId], references: [id], onDelete: Cascade)
+  performer         User            @relation("ApprovalHistoryPerformer", fields: [performedBy], references: [id])
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  @@index([approvalId])
+  @@index([tenantId])
+  @@map("approval_history")
+}
+
+enum ApprovalItemType {
+  BILL
+  EXPENSE
+  DOCUMENT
+  INVOICE
+  SERVICE_REQUEST
+  ENTITY
+  USER
+  OTHER
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DELEGATED
+  ESCALATED
+  EXPIRED
+}
+
+enum ApprovalPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }

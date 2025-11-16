@@ -79,13 +79,17 @@ export default function IndividualTab({
   const onSubmit = async (data: IndividualInput) => {
     try {
       setIsLoading(true);
+      
+      // Generate idempotency key for this request
+      const idempotencyKey = crypto.randomUUID();
+      
       const response = await fetch("/api/entities/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           country: data.country,
           tab: "individual",
-          name: `${data.firstName} ${data.lastName}`,
+          businessName: `${data.firstName} ${data.lastName}`,
           taxId: data.taxId,
           emiratesIdOrPassport: data.emiratesIdOrPassport,
           dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
@@ -93,6 +97,7 @@ export default function IndividualTab({
           entityType: "individual",
           consentVersion: "1.0",
           consentAccepted: data.termsAccepted,
+          idempotencyKey: idempotencyKey,
         }),
       });
 

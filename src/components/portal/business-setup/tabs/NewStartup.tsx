@@ -94,6 +94,10 @@ export default function NewStartupTab({
   const onSubmit = async (data: NewStartupInput) => {
     try {
       setIsLoading(true);
+      
+      // Generate idempotency key for this request
+      const idempotencyKey = crypto.randomUUID();
+      
       const response = await fetch("/api/entities/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,6 +111,7 @@ export default function NewStartupTab({
           incorporationDate: data.incorporationDate ? new Date(data.incorporationDate) : undefined,
           consentVersion: "1.0",
           consentAccepted: data.termsAccepted,
+          idempotencyKey: idempotencyKey,
         }),
       });
 
