@@ -1317,6 +1317,7 @@ model Invoice {
   currency   String        @default("USD")
   totalCents Int           @default(0)
   paidAt     DateTime?
+  pdfUrl     String?
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   items      InvoiceItem[]
