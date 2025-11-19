@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withTenantContext } from "@/lib/api-wrapper";
+import { requireTenantContext } from "@/lib/tenant-utils";
 import { entityService } from "@/services/entities";
-import { tenantContext } from "@/lib/tenant-context";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -32,57 +31,106 @@ const createEntitySchema = z.object({
  * GET /api/entities
  * List entities for current tenant
  */
-export async function GET(request: NextRequest) {
+const _api_GET = async (request: NextRequest) => {
+  let userId: string | null | undefined;
+  let tenantId: string | null | undefined;
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    let ctx;
+    try {
+      ctx = requireTenantContext();
+    } catch (contextError) {
+      logger.error("Failed to get tenant context in GET /api/entities", { error: contextError });
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Tenant context not available" },
+        { status: 401 }
+      );
+    }
+
+    userId = ctx.userId;
+    tenantId = ctx.tenantId;
+
+    if (!userId || !tenantId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
-
-    const ctx = await tenantContext.getContext();
     const searchParams = request.nextUrl.searchParams;
 
     const filters = {
       country: searchParams.get("country") || undefined,
-      status: searchParams.get("status") || undefined,
+      status: (searchParams.get("status") || undefined) as any,
       search: searchParams.get("search") || undefined,
       skip: searchParams.get("skip") ? parseInt(searchParams.get("skip")!) : 0,
       take: searchParams.get("take") ? parseInt(searchParams.get("take")!) : 50,
     };
 
-    const entities = await entityService.listEntities(ctx.tenantId, filters);
+    const entities = await entityService.listEntities(tenantId, filters as any);
 
     return NextResponse.json({
       success: true,
       data: entities,
     });
   } catch (error) {
-    logger.error("Error listing entities", { error });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    logger.error("Error listing entities", {
+      error: errorMsg,
+      userId,
+      tenantId,
+    });
+
+    // Log to console for production debugging
+    console.error("[ENTITIES_API_ERROR] GET failed:", {
+      message: errorMsg,
+      stack: errorStack,
+      userId,
+      tenantId,
+    });
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: errorMsg,
+        ...(process.env.NODE_ENV === 'development' && { details: errorStack }),
+      },
       { status: 500 }
     );
   }
-}
+};
 
 /**
  * POST /api/entities
  * Create new entity
  */
-export async function POST(request: NextRequest) {
+const _api_POST = async (request: NextRequest) => {
+  let userId: string | null | undefined;
+  let tenantId: string | null | undefined;
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    let ctx;
+    try {
+      ctx = requireTenantContext();
+    } catch (contextError) {
+      logger.error("Failed to get tenant context in POST /api/entities", { error: contextError });
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Tenant context not available" },
+        { status: 401 }
+      );
+    }
+
+    userId = ctx.userId;
+    tenantId = ctx.tenantId;
+
+    if (!userId || !tenantId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const ctx = await tenantContext.getContext();
     const body = await request.json();
 
     // Validate input
@@ -90,12 +138,13 @@ export async function POST(request: NextRequest) {
 
     // Create entity
     const entity = await entityService.createEntity(
-      ctx.tenantId,
-      session.user.id,
+      tenantId,
+      userId,
       {
         ...input,
         fiscalYearStart: input.fiscalYearStart ? new Date(input.fiscalYearStart) : undefined,
-      }
+        registrations: (input.registrations as any) || undefined,
+      } as any
     );
 
     logger.info("Entity created successfully", {
@@ -113,15 +162,38 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 }
       );
     }
 
-    logger.error("Error creating entity", { error });
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    logger.error("Error creating entity", {
+      error: errorMsg,
+      userId,
+      tenantId,
+    });
+
+    // Log to console for production debugging
+    console.error("[ENTITIES_API_ERROR] POST failed:", {
+      message: errorMsg,
+      stack: errorStack,
+      userId,
+      tenantId,
+    });
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: errorMsg,
+        ...(process.env.NODE_ENV === 'development' && { details: errorStack }),
+      },
       { status: 500 }
     );
   }
-}
+};
+
+export const GET = withTenantContext(_api_GET, { requireAuth: true });
+export const POST = withTenantContext(_api_POST, { requireAuth: true });

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import {
   EntityCreateInput,
   EntityUpdateInput,
@@ -30,7 +30,8 @@ export class EntityService {
       logger.info(`Creating entity for tenant ${tenantId}`, { input });
 
       // Validate input
-      const country = getCountry(input.country);
+      const countryCode = input.country as any;
+      const country = getCountry(countryCode);
       if (!country) {
         throw new Error(`Invalid country code: ${input.country}`);
       }
@@ -61,7 +62,7 @@ export class EntityService {
             status: "ACTIVE",
             fiscalYearStart: input.fiscalYearStart,
             activityCode: input.activityCode,
-            metadata: input.metadata || {},
+            metadata: (input.metadata || {}) as Prisma.InputJsonValue,
             createdBy: userId,
           },
         });
@@ -81,7 +82,7 @@ export class EntityService {
                   expiresAt: license.expiresAt,
                   economicZoneId: license.economicZoneId,
                   status: license.status || "ACTIVE",
-                  metadata: license.metadata || {},
+                  metadata: (license.metadata || {}) as Prisma.InputJsonValue,
                 },
               })
             )
@@ -99,7 +100,7 @@ export class EntityService {
                   value: reg.value,
                   source: reg.source,
                   status: reg.status || "PENDING",
-                  metadata: reg.metadata || {},
+                  metadata: (reg.metadata || {}) as Prisma.InputJsonValue,
                 },
                 // Note: verifiedAt will be set by verification job
               })
@@ -109,7 +110,7 @@ export class EntityService {
 
         // Create default obligations for country
         const defaultObligations = getObligations(
-          input.country,
+          countryCode,
           input.entityType || "company"
         );
         await Promise.all(
@@ -118,9 +119,9 @@ export class EntityService {
               data: {
                 entityId: newEntity.id,
                 type: obligation.type,
-                country: input.country,
+                country: countryCode,
                 frequency: obligation.frequency,
-                ruleConfig: obligation.ruleConfig || {},
+                ruleConfig: (obligation.rules || {}) as Prisma.InputJsonValue,
                 active: true,
               },
             })
@@ -133,7 +134,7 @@ export class EntityService {
             entityId: newEntity.id,
             userId,
             action: "CREATE",
-            changes: input,
+            changes: (input as any) as Prisma.InputJsonValue,
           },
         });
 
@@ -209,6 +210,10 @@ export class EntityService {
             periods: true,
           },
         },
+        auditLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
       },
       orderBy: filters?.orderBy || { createdAt: "desc" },
       skip: filters?.skip,
@@ -251,7 +256,7 @@ export class EntityService {
             legalForm: input.legalForm,
             status: input.status,
             activityCode: input.activityCode,
-            metadata: input.metadata,
+            metadata: (input.metadata || {}) as Prisma.InputJsonValue,
             updatedBy: userId,
           },
         });
@@ -263,7 +268,7 @@ export class EntityService {
               entityId,
               userId,
               action: "UPDATE",
-              changes,
+              changes: (changes as any) as Prisma.InputJsonValue,
             },
           });
         }
@@ -303,7 +308,7 @@ export class EntityService {
             expiresAt: input.expiresAt,
             economicZoneId: input.economicZoneId,
             status: input.status || "ACTIVE",
-            metadata: input.metadata || {},
+            metadata: (input.metadata || {}) as Prisma.InputJsonValue,
           },
         });
 
@@ -313,7 +318,7 @@ export class EntityService {
             entityId,
             userId,
             action: "ADD_LICENSE",
-            changes: input,
+            changes: (input as any) as Prisma.InputJsonValue,
           },
         });
       });
@@ -338,7 +343,7 @@ export class EntityService {
     const entity = await this.getEntity(tenantId, entityId);
 
     // Validate registration value format
-    const isValid = validateIdentifier(type, value, entity.country);
+    const isValid = validateIdentifier(type as any, value, entity.country);
     if (!isValid) {
       throw new Error(`Invalid ${type} format for country ${entity.country}`);
     }
@@ -373,7 +378,7 @@ export class EntityService {
             entityId,
             userId,
             action: "ADD_REGISTRATION",
-            changes: { type, value, source },
+            changes: ({ type, value, source } as any) as Prisma.InputJsonValue,
           },
         });
       });
@@ -410,7 +415,7 @@ export class EntityService {
             entityId,
             userId,
             action: "ARCHIVE",
-            changes: { status: { from: "ACTIVE", to: "ARCHIVED" } },
+            changes: ({ status: { from: "ACTIVE", to: "ARCHIVED" } } as any) as Prisma.InputJsonValue,
           },
         });
       });
@@ -483,7 +488,7 @@ export class EntityService {
             entityId,
             userId: "system", // System user for verification jobs
             action: "VERIFY_REGISTRATIONS",
-            changes: verificationResults,
+            changes: (verificationResults as any) as Prisma.InputJsonValue,
           },
         });
       });
@@ -519,6 +524,10 @@ export class EntityService {
             periods: true,
           },
         },
+        auditLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
       },
     });
   }
@@ -545,7 +554,7 @@ export class EntityService {
             entityId,
             userId,
             action: "DELETE",
-            changes: { status: entity.status },
+            changes: ({ status: entity.status } as any) as Prisma.InputJsonValue,
           },
         });
 

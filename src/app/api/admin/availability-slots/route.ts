@@ -15,7 +15,7 @@ const CreateSchema = z.object({
   date: z.string().min(1), // yyyy-mm-dd
   startTime: z.string().min(1), // HH:mm
   endTime: z.string().min(1), // HH:mm
-  available: z.boolean().optional().default(true),
+  available: z.boolean().default(true),
   reason: z.string().optional(),
   maxBookings: z.number().int().min(0).optional(),
 })

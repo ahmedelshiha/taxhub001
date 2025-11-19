@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withTenantContext } from "@/lib/api-wrapper";
+import { requireTenantContext } from "@/lib/tenant-utils";
 import { entityService } from "@/services/entities";
-import { tenantContext } from "@/lib/tenant-context";
 import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
 import crypto from "crypto";
+import { initializeVerificationJob, enqueueVerificationJob } from "@/lib/jobs/entity-setup";
 
 // Validation schema for setup wizard
 const setupWizardSchema = z.object({
@@ -29,17 +29,27 @@ const setupWizardSchema = z.object({
  * Idempotent entity setup endpoint from wizard
  * Returns entity_setup_id for tracking verification job
  */
-export async function POST(request: NextRequest) {
+const _api_POST = async (request: NextRequest) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    let ctx;
+    try {
+      ctx = requireTenantContext();
+    } catch (contextError) {
+      logger.error("Failed to get tenant context in POST /api/entities/setup", { error: contextError });
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Tenant context not available" },
+        { status: 401 }
+      );
+    }
+
+    const userId = ctx.userId;
+
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
-
-    const ctx = await tenantContext.getContext();
     const body = await request.json();
 
     // Validate input
@@ -49,7 +59,7 @@ export async function POST(request: NextRequest) {
     const existingKey = await prisma.idempotencyKey.findUnique({
       where: {
         tenantId_key: {
-          tenantId: ctx.tenantId,
+          tenantId: ctx.tenantId!,
           key: input.idempotencyKey,
         },
       },
@@ -69,8 +79,8 @@ export async function POST(request: NextRequest) {
 
     // Create entity with setup wizard data
     const entity = await entityService.createEntity(
-      ctx.tenantId,
-      session.user.id,
+      ctx.tenantId!,
+      userId,
       {
         country: input.country,
         name: input.businessName,
@@ -82,19 +92,19 @@ export async function POST(request: NextRequest) {
           licenseNumber: input.licenseNumber,
           economicZoneId: input.economicZoneId,
         }] : undefined,
-        registrations: input.registrations || [],
+        registrations: (input.registrations as any) || [],
       }
     );
 
     // Record consent
     await prisma.consent.create({
       data: {
-        tenantId: ctx.tenantId,
+        tenantId: ctx.tenantId!,
         entityId: entity.id,
         type: "terms",
         version: input.consentVersion,
-        acceptedBy: session.user.id,
-        ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
+        acceptedBy: userId,
+        ip: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined,
         userAgent: request.headers.get("user-agent") || undefined,
       },
     });
@@ -108,9 +118,9 @@ export async function POST(request: NextRequest) {
     } else {
       await prisma.idempotencyKey.create({
         data: {
-          tenantId: ctx.tenantId,
+          tenantId: ctx.tenantId!,
           key: input.idempotencyKey,
-          userId: session.user.id,
+          userId: userId,
           entityType: "entity",
           entityId: entity.id,
           status: "PROCESSED",
@@ -118,11 +128,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Initialize verification job and enqueue it
+    try {
+      await initializeVerificationJob(entity.id);
+      await enqueueVerificationJob(entity.id);
+    } catch (error) {
+      logger.error("Failed to enqueue verification job", { entityId: entity.id, error });
+      // Don't fail the setup - verification can be retried
+    }
+
     // Emit audit event
     await prisma.auditEvent.create({
       data: {
-        tenantId: ctx.tenantId,
-        userId: session.user.id,
+        tenantId: ctx.tenantId!,
+        userId: userId,
         type: "entity.setup.requested",
         resource: "entity",
         details: {
@@ -133,7 +152,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logger.info("Entity setup initiated", {
+    logger.info("Entity setup initiated and verification queued", {
       entityId: entity.id,
       country: input.country,
       tab: input.tab,
@@ -154,7 +173,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 }
       );
     }
@@ -165,4 +184,6 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+};
+
+export const POST = withTenantContext(_api_POST, { requireAuth: true });

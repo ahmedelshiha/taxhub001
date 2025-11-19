@@ -1,28 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withTenantContext } from "@/lib/api-wrapper";
+import { requireTenantContext } from "@/lib/tenant-utils";
 import { entityService } from "@/services/entities";
-import { tenantContext } from "@/lib/tenant-context";
 import { logger } from "@/lib/logger";
 
 /**
  * GET /api/entities/[id]/audit-history
  * Get entity audit history/changelog
  */
-export async function GET(
+const _api_GET = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const ctx = requireTenantContext();
+    const userId = ctx.userId;
+    const tenantId = ctx.tenantId;
+
+    if (!userId || !tenantId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const ctx = await tenantContext.getContext();
     const searchParams = request.nextUrl.searchParams;
     const limit = searchParams.get("limit")
       ? parseInt(searchParams.get("limit")!)
@@ -30,7 +31,7 @@ export async function GET(
 
     // Get audit history
     const history = await entityService.getAuditHistory(
-      ctx.tenantId,
+      tenantId,
       params.id,
       limit
     );
@@ -53,4 +54,6 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+};
+
+export const GET = withTenantContext(_api_GET, { requireAuth: true });

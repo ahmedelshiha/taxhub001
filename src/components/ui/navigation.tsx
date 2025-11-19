@@ -194,9 +194,9 @@ export function Navigation({
                     ) : (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link href="/portal" className="flex items-center">
+                          <Link href="/portal/dashboard" className="flex items-center">
                             <Calendar className="mr-2 h-4 w-4" />
-                            My Bookings
+                            My Dashboard
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -305,11 +305,11 @@ export function Navigation({
                     ) : (
                       <>
                         <Link
-                          href="/portal"
+                          href="/portal/dashboard"
                           className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          My Bookings
+                          My Dashboard
                         </Link>
                         <Link
                           href="/admin/profile?tab=preferences"

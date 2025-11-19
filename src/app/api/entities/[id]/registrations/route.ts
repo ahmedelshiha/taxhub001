@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { withTenantContext } from "@/lib/api-wrapper";
+import { requireTenantContext } from "@/lib/tenant-utils";
 import { entityService } from "@/services/entities";
-import { tenantContext } from "@/lib/tenant-context";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -17,20 +16,22 @@ const addRegistrationSchema = z.object({
  * POST /api/entities/[id]/registrations
  * Add a registration (TRN, ZATCA, ETA, etc.) to an entity
  */
-export async function POST(
+const _api_POST = async (
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+) => {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const ctx = requireTenantContext();
+    const userId = ctx.userId;
+    const tenantId = ctx.tenantId;
+
+    if (!userId || !tenantId) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const ctx = await tenantContext.getContext();
     const body = await request.json();
 
     // Validate input
@@ -38,9 +39,9 @@ export async function POST(
 
     // Add registration
     await entityService.addRegistration(
-      ctx.tenantId,
+      tenantId,
       params.id,
-      session.user.id,
+      userId,
       input.type,
       input.value,
       input.source
@@ -61,7 +62,7 @@ export async function POST(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Validation error", details: error.issues },
         { status: 400 }
       );
     }
@@ -87,4 +88,6 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+};
+
+export const POST = withTenantContext(_api_POST, { requireAuth: true });
