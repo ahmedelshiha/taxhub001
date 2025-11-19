@@ -48,7 +48,10 @@
     "test:i18n": "tsx scripts/test-i18n.ts",
     "test:api": "bash scripts/test-api-health.sh",
     "test:api:prod": "bash scripts/test-api-health.sh https://taxhub-one.vercel.app",
-    "verify:vercel": "bash scripts/vercel-build.sh"
+    "verify:vercel": "bash scripts/vercel-build.sh",
+    "pre-deploy-check": "npx tsx scripts/pre-deploy-validate.ts",
+    "pre-deploy-fix": "npx tsx scripts/auto-fix-errors.ts",
+    "pre-deploy": "pnpm pre-deploy-fix && pnpm pre-deploy-check && pnpm typecheck && pnpm build"
   },
   "dependencies": {
     "@dnd-kit/accessibility": "^3.1.0",
