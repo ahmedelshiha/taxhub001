@@ -8,6 +8,8 @@
 export { default as ServiceCard } from './ServiceCard'
 export { default as BookingCard } from './BookingCard'
 export { default as TaskCard } from './TaskCard'
+export { default as TaskDetailCard } from './TaskDetailCard'
 export { default as DocumentCard } from './DocumentCard'
 export { default as InvoiceCard } from './InvoiceCard'
 export { default as ApprovalCard } from './ApprovalCard'
+export { default as TaskCommentCard } from './TaskCommentCard'

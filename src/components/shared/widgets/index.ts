@@ -7,3 +7,7 @@
 export { default as StatusBadge } from './StatusBadge'
 export { default as PriorityBadge } from './PriorityBadge'
 export { default as UserAvatar } from './UserAvatar'
+export { default as TaskStatusSelect } from './TaskStatusSelect'
+export { default as TaskProgressBar } from './TaskProgressBar'
+export { default as TaskDueDateBadge } from './TaskDueDateBadge'
+export { default as TaskPrioritySelect } from './TaskPrioritySelect'
