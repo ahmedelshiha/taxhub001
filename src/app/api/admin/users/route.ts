@@ -111,8 +111,13 @@ export const GET = withAdminAuth(
  * Create a new user
  */
 export const POST = withAdminAuth(
-  async (request, { user, tenantId }) => {
+  async (request) => {
     try {
+      const ctx = tenantContext()
+      if (!ctx?.tenantId) {
+        return respond.unauthorized('Tenant context not found')
+      }
+
       const body = await request.json()
       const input = UserCreateSchema.parse(body)
 
@@ -120,7 +125,7 @@ export const POST = withAdminAuth(
       const existingUser = await prisma.user.findFirst({
         where: {
           email: input.email,
-          tenantId,
+          tenantId: ctx.tenantId,
         },
       })
 
