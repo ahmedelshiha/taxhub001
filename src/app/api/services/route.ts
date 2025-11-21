@@ -90,7 +90,7 @@ const getCachedServices = withCache<any>(
  * - Unauthenticated: see public active services
  */
 export const GET = withTenantContext(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { params }: any) => {
     try {
       // Rate limiting
       const ip = getClientIp(request as any)
@@ -98,7 +98,7 @@ export const GET = withTenantContext(
       if (rl && !rl.allowed) {
         await logAudit({
           action: 'security.ratelimit.block',
-          details: { ip, key: `services-list:${ip}`, route: new URL(request.url).pathname },
+          metadata: { ip, key: `services-list:${ip}`, route: new URL(request.url).pathname },
         }).catch(() => {}) // Don't fail if audit logging fails
         return respond.tooMany('Rate limit exceeded')
       }
@@ -144,7 +144,7 @@ export const GET = withTenantContext(
  * Create a new service (Admin only)
  */
 export const POST = withTenantContext(
-  async (request: NextRequest) => {
+  async (request: NextRequest, { params }: any) => {
     try {
       const ctx = requireTenantContext()
 
