@@ -556,6 +556,55 @@ pnpm exec tsc --noEmit 2>&1 | grep -c "error TS2345"
 ✅ `pnpm exec tsc --noEmit` shows 0 TS2345 handler signature errors
 ✅ API routes still function (no behavior changes, just signature changes)
 
+### Two Middleware Patterns Reference (Session Discovery)
+
+#### Pattern 1: withTenantAuth (from auth-middleware.ts)
+
+**How it works**:
+- Attaches user properties directly to request object
+- Properties added: `userId`, `tenantId`, `userRole`, `userEmail`
+- Handler receives: `(authenticatedRequest, context)`
+- Context contains: `{ params: ...}`
+
+**Correct Handler Signature**:
+```ts
+export const GET = withTenantAuth(async (request: any, { params }: any) => {
+  const { userId, tenantId, userRole } = request as any
+  const { id } = params
+  // ... handler logic
+})
+```
+
+#### Pattern 2: withTenantContext (from api-wrapper.ts)
+
+**How it works**:
+- Runs handler within AsyncLocal tenant context
+- User data NOT attached to request
+- Handler receives: `(request, { params })`
+- Must call `requireTenantContext()` to get user data
+
+**Correct Handler Signature**:
+```ts
+export const GET = withTenantContext(async (request: any, { params }: any) => {
+  const { userId, tenantId, role } = requireTenantContext()
+  const { id } = await params
+  // ... handler logic
+}, { requireAuth: true })
+```
+
+### Fixed Handler Examples (Session Work)
+
+**Analyzed and Fixed Files**:
+1. `src/app/api/documents/[id]/analyze/route.ts` - Pattern 1 (withTenantAuth)
+2. `src/app/api/documents/[id]/download/route.ts` - Pattern 1 (withTenantAuth)
+3. `src/app/api/documents/[id]/sign/route.ts` - Pattern 1 (withTenantAuth)
+4. `src/app/api/tasks/[id]/comments/[commentId]/route.ts` - Pattern 2 (withTenantContext)
+
+**Bonus Fixes Included**:
+- Replaced deprecated `resourceType`/`resourceId` → `resource` in AuditLog
+- Fixed `details` → `metadata` in audit entries
+- Maintained all business logic integrity
+
 ---
 
 # End of Comprehensive Ruleset
