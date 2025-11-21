@@ -160,7 +160,7 @@ export const POST = withTenantContext(
         return respond.tooMany('Too many service creation attempts')
       }
 
-      let body = await request.json()
+      const body = await request.json()
 
       // Validate request
       const validatedData = ServiceSchema.parse(body)

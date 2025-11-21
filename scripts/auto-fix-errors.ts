@@ -203,7 +203,7 @@ class ErrorAutoFixer {
 
     for (const file of files) {
       try {
-        let content = fs.readFileSync(file, 'utf-8')
+        const content = fs.readFileSync(file, 'utf-8')
         const original = content
 
         // Fix common import path issues
@@ -212,7 +212,7 @@ class ErrorAutoFixer {
 
         for (const match of importMatches) {
           const importPath = match[2]
-          let resolvedPath = path.join(process.cwd(), importPath.replace('@/', 'src/'))
+          const resolvedPath = path.join(process.cwd(), importPath.replace('@/', 'src/'))
 
           // Try with .ts extension
           if (!fs.existsSync(resolvedPath) && !fs.existsSync(resolvedPath + '.ts')) {

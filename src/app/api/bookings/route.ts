@@ -142,7 +142,7 @@ export const POST = withTenantContext(
         return respond.tooMany('Too many booking creation attempts')
       }
 
-      let body = await request.json()
+      const body = await request.json()
 
       // Extract fields
       const {

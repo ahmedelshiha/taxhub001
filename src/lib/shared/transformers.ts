@@ -49,7 +49,7 @@ export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return '';
 
   // Remove script tags and event handlers
-  let sanitized = html
+  const sanitized = html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
     .replace(/on\w+\s*=\s*[^\s>]*/gi, '');

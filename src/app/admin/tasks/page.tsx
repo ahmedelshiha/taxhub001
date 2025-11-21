@@ -44,7 +44,7 @@ export default function AdminTasksPage() {
 
   // Filter and sort tasks
   const filteredTasks = useMemo(() => {
-    let result = tasks.filter((task) => {
+    const result = tasks.filter((task) => {
       const matchesSearch =
         !searchQuery ||
         task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

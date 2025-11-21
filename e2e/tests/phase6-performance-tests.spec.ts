@@ -162,7 +162,7 @@ test.describe('Bundle & Asset Size', () => {
   })
 
   test('no massive uncompressed responses', async ({ page }) => {
-    let largeResponses: any[] = []
+    const largeResponses: any[] = []
 
     page.on('response', async (response) => {
       const contentEncoding = response.headers()['content-encoding']

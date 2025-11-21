@@ -103,7 +103,7 @@ export function createListRoute<T>(
       const offset = Number(searchParams.get('offset')) || 0
 
       // Parse and validate filters
-      let filters = parseFilters(searchParams, filterSchema)
+      const filters = parseFilters(searchParams, filterSchema)
       filters.limit = limit
       filters.offset = offset
 

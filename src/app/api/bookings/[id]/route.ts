@@ -106,7 +106,7 @@ export const PUT = withTenantContext(
         return respond.badRequest('Invalid booking ID')
       }
 
-      let body = await request.json()
+      const body = await request.json()
 
       // Fetch existing booking
       const existing = await prisma.booking.findUnique({

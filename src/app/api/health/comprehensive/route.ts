@@ -30,7 +30,7 @@ export async function GET(): Promise<Response> {
   }
 
   // Check Prisma initialization
-  let prismaStart = Date.now()
+  const prismaStart = Date.now()
   try {
     const prisma = await getPrisma()
     const prismaDuration = Date.now() - prismaStart
@@ -61,7 +61,7 @@ export async function GET(): Promise<Response> {
   }
 
   // Check database connectivity
-  let dbStart = Date.now()
+  const dbStart = Date.now()
   try {
     const prisma = await getPrisma()
     

@@ -75,7 +75,6 @@ export const GET = withTenantContext(
 
         // Add booking assignees
         bookingAssignees.forEach((b) => {
-          // @ts-ignore - assignedToId exists in schema but types might lag
           if (b.assignedToId) teamMemberIds.add(b.assignedToId)
         })
 

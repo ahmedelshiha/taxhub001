@@ -115,7 +115,7 @@ export const PUT = withTenantContext(
         return respond.forbidden('You do not have permission to update services')
       }
 
-      let body = await request.json()
+      const body = await request.json()
 
       // Find existing service
       const existing = await prisma.service.findFirst({

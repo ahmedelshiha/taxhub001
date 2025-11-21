@@ -134,7 +134,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
       }
     }
 
-    let tenantId = ctx.tenantId
+    const tenantId = ctx.tenantId
     // If tenantId is missing, it will fail validation in service creation if it's required
     // We trust the context provider to resolve it correctly
 
