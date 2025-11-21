@@ -156,10 +156,10 @@ export const POST = withTenantContext(
   async (request, { params }) => {
     try {
       const ctx = requireTenantContext()
-      const { user, tenantId } = ctx
+      const { userId, tenantId, role } = ctx
 
       // Verify admin access
-      if (ctx.role !== 'SUPER_ADMIN' && !ctx.tenantRole?.includes('ADMIN')) {
+      if (role !== 'SUPER_ADMIN' && role !== 'ADMIN') {
         return respond.forbidden('Only administrators can create tasks')
       }
 
@@ -171,6 +171,7 @@ export const POST = withTenantContext(
         data: {
           ...input,
           tenantId,
+          createdById: userId,
         },
         include: {
           assignee: {
