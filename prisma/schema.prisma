@@ -77,6 +77,8 @@ model User {
   sessions                  Session[]
   settingChangeDiffs        SettingChangeDiff[]
   taskTemplates             TaskTemplate[]
+  tasksCreatedBy            Task[]                  @relation("TaskCreatedBy")
+  bookingsCreatedBy         Booking[]               @relation("BookingCreatedBy")
   teamMembers               TeamMember[]            @relation("UserTeamMember")
   tenantMemberships         TenantMembership[]
   grantedPermissions        UserPermission[]        @relation("GrantedBy")
