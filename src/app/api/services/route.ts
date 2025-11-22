@@ -74,8 +74,8 @@ const getCachedServices = withCache<any>(
     const result = await svc.getServicesList(tenantId, filters as any)
 
     // Filter fields based on role
-    if (Array.isArray(result?.data)) {
-      result.data = result.data.map((s: any) => filterServiceFields(s, userRole))
+    if (Array.isArray(result?.services)) {
+      result.services = result.services.map((s: any) => filterServiceFields(s, userRole))
     }
 
     return result
@@ -121,13 +121,13 @@ export const GET = withTenantContext(
       // Get cached services
       const result = await getCachedServices(request)
 
-      if (!result || !result?.services) {
+      if (!result || !Array.isArray(result?.services)) {
         return respond.ok(
           { services: [], total: 0, page: 0, limit: 20, totalPages: 0 }
         )
       }
 
-      return respond.ok(result)
+      return respond.ok(result as any)
     } catch (error) {
       logger.error('Failed to fetch services', { error })
       if (error instanceof Error && error.message.includes('Zod')) {
@@ -165,7 +165,7 @@ export const POST = withTenantContext(
       const validatedData = ServiceSchema.parse(body)
 
       // Create service
-      const service = await svc.createService(ctx.tenantId, validatedData as any)
+      const service = await svc.createService(ctx.tenantId as string, validatedData as any, ctx.userId as string)
 
       // Log audit
       await logAudit({

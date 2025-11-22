@@ -171,7 +171,7 @@ export const POST = withTenantContext(
         data: {
           ...input,
           tenantId: tenantId as string,
-          createdById: userId,
+          createdById: userId as string,
         },
         include: {
           assignee: {

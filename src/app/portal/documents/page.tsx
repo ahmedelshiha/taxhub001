@@ -333,15 +333,21 @@ export default function PortalDocumentsPage() {
                 key={doc.id}
                 data={{
                   id: doc.id,
+                  tenantId: doc.tenantId || '',
                   filename: doc.name,
                   size: doc.size,
                   mimeType: doc.contentType,
                   status: (doc.status?.toUpperCase() || 'UNKNOWN') as any,
                   uploadedAt: doc.uploadedAt,
                   uploader: doc.uploadedBy,
+                  uploadedById: doc.uploadedById || '',
+                  storageKey: doc.storageKey || '',
+                  visibility: doc.visibility || 'PRIVATE',
                   category: doc.contentType.split('/')[0],
                   version: 1,
                   isStarred: doc.isStarred,
+                  createdAt: doc.createdAt || doc.uploadedAt,
+                  updatedAt: doc.updatedAt || doc.uploadedAt,
                 }}
                 variant="portal"
                 showActions={true}

@@ -6,7 +6,7 @@ import { requireTenantContext } from '@/lib/tenant-utils';
 import { processEngine, ProcessStatus } from '@/lib/bpm/process-engine';
 
 const ProcessDefinitionSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1).optional(),
   name: z.string().min(1),
   description: z.string().optional(),
   version: z.string(),

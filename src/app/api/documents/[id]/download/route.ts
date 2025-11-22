@@ -18,7 +18,7 @@ export const GET = withTenantContext(async (request: NextRequest, { params }: an
     const document = await prisma.attachment.findFirst({
       where: {
         id: params.id,
-        tenantId,
+        tenantId: tenantId as string,
       },
       include: {
         uploader: {
@@ -60,9 +60,9 @@ export const GET = withTenantContext(async (request: NextRequest, { params }: an
     // Log download
     await prisma.auditLog.create({
       data: {
-        tenantId,
+        tenantId: tenantId as string,
         action: 'documents:download',
-        userId,
+        userId: userId as string,
         resource: 'Document',
         metadata: {
           documentId: document.id,

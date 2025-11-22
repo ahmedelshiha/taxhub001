@@ -21,7 +21,7 @@ export const GET = withTenantContext(
       const task = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
         include: {
           assignee: {
@@ -97,7 +97,7 @@ export const PUT = withTenantContext(
       const existingTask = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 
@@ -142,9 +142,6 @@ export const PUT = withTenantContext(
 
       // Log audit event with changes
       const changes: Record<string, any> = {}
-      if (updates.status && updates.status !== oldValues.status) {
-        changes.status = { from: oldValues.status, to: updates.status }
-      }
       if (updates.priority && updates.priority !== oldValues.priority) {
         changes.priority = { from: oldValues.priority, to: updates.priority }
       }
@@ -160,12 +157,14 @@ export const PUT = withTenantContext(
 
       if (Object.keys(changes).length > 0) {
         await logAudit({
-          tenantId,
-          userId: ctx.userId,
+          tenantId: tenantId as string,
+          userId: ctx.userId as string,
           action: 'TASK_UPDATED',
-          entity: 'Task',
-          entityId: taskId,
-          changes,
+          resource: 'Task',
+          metadata: {
+            taskId,
+            changes,
+          },
         })
       }
 
@@ -211,12 +210,12 @@ export const DELETE = withTenantContext(
 
       // Log audit event before deletion
       await logAudit({
-        tenantId,
-        userId: ctx.userId,
+        tenantId: tenantId as string,
+        userId: ctx.userId as string,
         action: 'TASK_DELETED',
-        entity: 'Task',
-        entityId: taskId,
-        changes: {
+        resource: 'Task',
+        metadata: {
+          taskId,
           title: task.title,
           status: task.status,
         },

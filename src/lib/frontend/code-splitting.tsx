@@ -45,7 +45,7 @@ export const DYNAMIC_COMPONENTS = {
 
   // Portal components
   BookingWizard: () =>
-    import('@/components/booking/BookingWizard').then((mod) => mod.BookingWizard),
+    import('@/components/booking/BookingWizard').then((mod) => ({ default: mod.default })),
   ServiceDetail: () =>
     import('@/components/portal/ServiceDetail').then(
       (mod) => mod.ServiceDetail
@@ -54,7 +54,7 @@ export const DYNAMIC_COMPONENTS = {
   // Shared heavy components
   DataTable: () =>
     import('@/components/shared/tables/SharedDataTable').then(
-      (mod) => mod.SharedDataTable
+      (mod) => ({ default: mod.default })
     ),
   AdvancedSearch: () =>
     import('@/components/shared/inputs/AdvancedSearch').then(

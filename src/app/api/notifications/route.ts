@@ -105,7 +105,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return respond.badRequest(error.errors)
+      return respond.badRequest(error.errors.map(e => e.message).join(', '))
     }
     console.error('Error updating notifications:', error)
     return respond.serverError()

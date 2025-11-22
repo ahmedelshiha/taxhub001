@@ -37,7 +37,7 @@ export const GET = withAdminAuth(
       const filters = UserListFilterSchema.parse(Object.fromEntries(searchParams))
 
       // Build query
-      const where: any = { tenantId }
+      const where: any = { tenantId: tenantId as string }
 
       if (filters.role) {
         where.role = filters.role
@@ -137,7 +137,7 @@ export const POST = withAdminAuth(
           role: input.role,
           department: input.department,
           position: input.position,
-          tenantId,
+          tenantId: tenantId as string,
           isActive: true,
         },
         select: {
