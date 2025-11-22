@@ -285,7 +285,7 @@ export default function PortalTasksPage() {
                     <TaskCard
                       data={task}
                       variant="portal"
-                      onClick={() => {}}
+                      onClick={() => { }}
                       showActions={false}
                     />
                   </Link>
@@ -326,7 +326,7 @@ export default function PortalTasksPage() {
                       <TaskCard
                         data={task}
                         variant="portal"
-                        onClick={() => {}}
+                        onClick={() => { }}
                         showActions={false}
                       />
                     </Link>
@@ -356,7 +356,9 @@ export default function PortalTasksPage() {
       {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700">
+              {(error as any) instanceof Error ? (error as any).message : String(error)}
+            </p>
           </CardContent>
         </Card>
       )}

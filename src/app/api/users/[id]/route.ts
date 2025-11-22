@@ -39,8 +39,6 @@ export const GET = withTenantContext(
           // Only admins see these fields
           isAdmin: isAdmin,
           emailVerified: isAdmin,
-          // Only self can see these
-          phone: user.id === targetUserId,
         },
       })
 
@@ -51,7 +49,7 @@ export const GET = withTenantContext(
       // Check authorization
       if (userId !== targetUserId && !isAdmin) {
         // Portal users can only see team members they work with
-        const isTeamMember = await checkIfTeamMember(userId, targetUserId, tenantId)
+        const isTeamMember = await checkIfTeamMember(userId, targetUserId, tenantId ?? '')
 
         if (!isTeamMember) {
           return respond.forbidden('You do not have access to this user profile')
@@ -212,8 +210,8 @@ async function checkIfTeamMember(
     where: {
       tenantId,
       OR: [
-        { clientId: userId, assignedTeamMemberId: { userId: targetUserId } },
-        { clientId: targetUserId, assignedTeamMemberId: { userId: userId } },
+        { clientId: userId, assignedTeamMemberId: targetUserId },
+        { clientId: targetUserId, assignedTeamMemberId: userId },
       ],
     },
     select: { id: true },

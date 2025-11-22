@@ -127,7 +127,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     return respond.ok({ data: approval }, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return respond.badRequest(error.errors)
+      return respond.badRequest(error.errors.map(e => e.message).join(', '))
     }
     console.error('Error creating approval:', error)
     return respond.serverError()

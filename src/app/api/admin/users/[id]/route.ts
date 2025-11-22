@@ -29,7 +29,7 @@ export const GET = withAdminAuth(
       const userDetail = await prisma.user.findFirst({
         where: {
           id,
-          tenantId,
+          tenantId: tenantId as string,
         },
         select: {
           id: true,
@@ -78,7 +78,7 @@ export const PUT = withAdminAuth(
 
       // Verify user exists and belongs to tenant
       const existing = await prisma.user.findFirst({
-        where: { id, tenantId },
+        where: { id, tenantId: tenantId as string },
       })
 
       if (!existing) {
@@ -143,7 +143,7 @@ export const DELETE = withAdminAuth(
 
       // Verify user exists and belongs to tenant
       const existing = await prisma.user.findFirst({
-        where: { id, tenantId },
+        where: { id, tenantId: tenantId as string },
       })
 
       if (!existing) {
@@ -164,7 +164,7 @@ export const DELETE = withAdminAuth(
 
       // Log audit event
       await logAudit({
-        userId: user.id,
+        userId: ctx.userId,
         action: 'USER_DEACTIVATED',
         entity: 'User',
         entityId: id,

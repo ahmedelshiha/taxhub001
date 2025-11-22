@@ -23,6 +23,10 @@ interface Task {
   watchers?: Array<{ id: string; name: string }>
   reminders?: Array<{ id: string; type: string }>
   dependencies?: string[]
+  tags?: string[]
+  estimatedHours?: number
+  clientId?: string
+  bookingId?: string
 }
 
 interface Props {
@@ -91,7 +95,7 @@ export default function TaskDetailsModal({ open, onClose, task }: Props) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`px-3 py-1 text-xs font-medium rounded-full border bg-white/20 text-white border-white/30`}>{category.charAt(0).toUpperCase() + category.slice(1)}</span>
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full border bg-white/20 text-white border-white/30`}>{status.replace('_',' ')}</span>
+                  <span className={`px-3 py-1 text-xs font-medium rounded-full border bg-white/20 text-white border-white/30`}>{status.replace('_', ' ')}</span>
                   <button onClick={onClose} className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
                 </div>
               </div>
@@ -122,7 +126,7 @@ export default function TaskDetailsModal({ open, onClose, task }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 {metaItem(<Calendar className="w-4 h-4" />, 'Due Date', dueDate ? new Date(dueDate).toLocaleString() : '—')}
                 {metaItem(<User className="w-4 h-4" />, 'Assignee', task?.assigneeId ? 'Assigned' : 'Unassigned')}
-                {metaItem(<AlertTriangle className="w-4 h-4" />, 'Status', status.replace('_',' '))}
+                {metaItem(<AlertTriangle className="w-4 h-4" />, 'Status', status.replace('_', ' '))}
                 {metaItem(<Clock className="w-4 h-4" />, 'Estimated Hours', typeof task?.estimatedHours === 'number' ? `${task.estimatedHours}h` : '—')}
               </div>
 
@@ -176,6 +180,6 @@ export default function TaskDetailsModal({ open, onClose, task }: Props) {
 
 function MessageBubble() {
   return (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-700"><path d="M18 10c0 3.866-3.582 7-8 7-.898 0-1.76-.12-2.563-.343-.392-.11-.81.024-1.06.343L4.5 18.5a1 1 0 01-1.707-.707v-1.379c0-.298-.133-.58-.36-.773C1.545 14.58 1 12.855 1 11c0-3.866 3.582-7 8-7s9 3.134 9 6z"/></svg>
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-700"><path d="M18 10c0 3.866-3.582 7-8 7-.898 0-1.76-.12-2.563-.343-.392-.11-.81.024-1.06.343L4.5 18.5a1 1 0 01-1.707-.707v-1.379c0-.298-.133-.58-.36-.773C1.545 14.58 1 12.855 1 11c0-3.866 3.582-7 8-7s9 3.134 9 6z" /></svg>
   )
 }

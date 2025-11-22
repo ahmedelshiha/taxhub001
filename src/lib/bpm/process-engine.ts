@@ -192,9 +192,10 @@ export class ProcessEngine {
   /**
    * Create a new process definition
    */
-  createProcessDefinition(definition: Omit<ProcessDefinition, 'createdAt' | 'updatedAt'>): ProcessDefinition {
+  createProcessDefinition(definition: Omit<ProcessDefinition, 'createdAt' | 'updatedAt' | 'createdBy'>): ProcessDefinition {
     const processDef: ProcessDefinition = {
       ...definition,
+      createdBy: 'system', // Default value, can be overridden with proper authentication context
       createdAt: new Date(),
       updatedAt: new Date(),
     };

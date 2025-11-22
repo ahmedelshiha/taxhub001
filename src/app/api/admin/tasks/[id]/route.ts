@@ -27,7 +27,7 @@ export const GET = withTenantContext(
       const task = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
         include: {
           assignee: {
@@ -104,7 +104,7 @@ export const PUT = withTenantContext(
       const existingTask = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 
@@ -204,7 +204,7 @@ export const DELETE = withTenantContext(
       const task = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 

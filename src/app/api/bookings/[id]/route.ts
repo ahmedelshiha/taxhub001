@@ -79,7 +79,7 @@ export const GET = withTenantContext(
       }
 
       // Filter fields based on role
-      const filteredBooking = filterBookingFields(booking, ctx.role, ctx.userId)
+      const filteredBooking = filterBookingFields(booking, ctx.role || '', ctx.userId || '')
 
       return respond.ok(filteredBooking)
     } catch (error) {
@@ -187,7 +187,7 @@ export const PUT = withTenantContext(
       })
 
       // Filter fields based on role
-      const filteredBooking = filterBookingFields(updated, ctx.role, ctx.userId)
+      const filteredBooking = filterBookingFields(updated, ctx.role || '', ctx.userId || '')
 
       return respond.ok(filteredBooking)
     } catch (error) {

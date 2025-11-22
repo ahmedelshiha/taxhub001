@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { withTenantContext, requireTenantContext } from '@/lib/api-wrapper'
+import { withTenantContext } from '@/lib/api-wrapper'
+import { requireTenantContext } from '@/lib/tenant-utils'
 import { respond } from '@/lib/api-response'
 import { TaskCommentUpdateSchema } from '@/schemas/shared/entities/task'
 import { prisma } from '@/lib/prisma'
@@ -20,7 +21,7 @@ export const PUT = withTenantContext(
       const task = await prisma.task.findFirst({
         where: {
           id: taskId,
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 

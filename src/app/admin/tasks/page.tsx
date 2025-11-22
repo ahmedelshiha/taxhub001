@@ -57,18 +57,18 @@ export default function AdminTasksPage() {
     })
 
     // Sort
-    result.sort((a, b) => {
+    result.sort((a: Task, b: Task) => {
       if (sortBy === 'dueAt') {
         if (!a.dueAt) return 1
         if (!b.dueAt) return -1
         return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime()
       }
       if (sortBy === 'priority') {
-        const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 }
+        const priorityOrder: Record<TaskPriority, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 }
         return priorityOrder[a.priority] - priorityOrder[b.priority]
       }
       if (sortBy === 'status') {
-        const statusOrder = { OPEN: 0, IN_PROGRESS: 1, REVIEW: 2, BLOCKED: 3, COMPLETED: 4 }
+        const statusOrder: Record<TaskStatus, number> = { OPEN: 0, IN_PROGRESS: 1, REVIEW: 2, BLOCKED: 3, COMPLETED: 4 }
         return statusOrder[a.status] - statusOrder[b.status]
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -93,8 +93,8 @@ export default function AdminTasksPage() {
       completionRate:
         tasks.length > 0
           ? Math.round(
-              (tasks.filter((t) => t.status === TaskStatus.COMPLETED).length / tasks.length) * 100
-            )
+            (tasks.filter((t) => t.status === TaskStatus.COMPLETED).length / tasks.length) * 100
+          )
           : 0,
     }
   }, [tasks])

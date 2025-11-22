@@ -90,8 +90,11 @@ export const PUT = withTenantContext(
       }
 
       // Merge new settings with existing
+      const settingsObj = typeof currentSettings === 'object' && currentSettings !== null
+        ? currentSettings as Record<string, any>
+        : {}
       const updatedSettings = {
-        ...currentSettings,
+        ...settingsObj,
         ...input,
       }
 

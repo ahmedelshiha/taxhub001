@@ -136,7 +136,7 @@ export const GET = withAdminAuth(async (request, context) => {
         action: 'admin:documents_list',
         userId,
         resource: 'Document',
-        details: {
+        metadata: {
           count: documents.length,
           total,
           filters: {
@@ -145,7 +145,7 @@ export const GET = withAdminAuth(async (request, context) => {
           },
         },
       },
-    }).catch(() => {})
+    }).catch(() => { })
 
     return respond.ok({
       data: formattedDocuments,

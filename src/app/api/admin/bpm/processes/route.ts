@@ -69,10 +69,7 @@ export const POST = withTenantContext(
       const body = await request.json();
       const validated = ProcessDefinitionSchema.parse(body);
 
-      const process = processEngine.createProcessDefinition({
-        ...validated,
-        createdBy: userId || 'system',
-      });
+      const process = processEngine.createProcessDefinition(validated);
 
       return NextResponse.json({
         success: true,

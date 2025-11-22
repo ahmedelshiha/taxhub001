@@ -68,7 +68,6 @@ export const GET = withTenantContext(
         },
         include: {
           availabilitySlots: true,
-          reviews: { take: 5, orderBy: { createdAt: 'desc' } },
         },
       })
 
@@ -201,7 +200,6 @@ export const DELETE = withTenantContext(
         data: {
           active: false,
           status: 'INACTIVE',
-          deletedAt: new Date(),
         },
       })
 

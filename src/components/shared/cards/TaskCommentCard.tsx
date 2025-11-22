@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 interface TaskCommentCardProps {
   /** The comment to display */
   comment: TaskComment
+  /** Task ID (optional, for context) */
+  taskId?: string
   /** Called when reply is clicked */
   onReply?: (commentId: string) => void
   /** Called when edit is clicked */
@@ -46,6 +48,7 @@ interface TaskCommentCardProps {
  */
 export default function TaskCommentCard({
   comment,
+  taskId,
   onReply,
   onEdit,
   onDelete,

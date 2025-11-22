@@ -127,7 +127,7 @@ export const POST = withTenantContext(async (
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return respond.badRequest(error.errors)
+      return respond.badRequest(error.errors.map(e => e.message).join(', '))
     }
     if (error instanceof Error) {
       return respond.badRequest(error.message)

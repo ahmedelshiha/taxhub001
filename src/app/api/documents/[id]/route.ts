@@ -121,7 +121,7 @@ export const GET = withTenantAuth(async (request, context) => {
         userId,
         resource: 'Document',
       },
-    }).catch(() => {})
+    }).catch(() => { })
 
     return respond.ok({ data: baseData })
   } catch (error) {
@@ -168,8 +168,11 @@ export const PUT = withTenantAuth(async (request, context) => {
     const updateData = UpdateSchema.parse(body)
 
     // Merge metadata
+    const currentMetadata = typeof document.metadata === 'object' && document.metadata !== null
+      ? document.metadata as Record<string, any>
+      : {}
     const newMetadata = updateData.metadata
-      ? { ...document.metadata, ...updateData.metadata }
+      ? { ...currentMetadata, ...updateData.metadata }
       : document.metadata
 
     const updated = await prisma.attachment.update({
@@ -199,7 +202,7 @@ export const PUT = withTenantAuth(async (request, context) => {
         resource: 'Document',
         metadata: updateData,
       },
-    }).catch(() => {})
+    }).catch(() => { })
 
     return respond.ok({
       data: {
@@ -263,7 +266,7 @@ export const DELETE = withTenantAuth(async (request, context) => {
           documentSize: document.size,
         },
       },
-    }).catch(() => {})
+    }).catch(() => { })
 
     // Admin: hard delete, Portal user: soft delete (archive)
     if (userRole === 'ADMIN') {
@@ -281,11 +284,14 @@ export const DELETE = withTenantAuth(async (request, context) => {
       })
     } else {
       // Soft delete - mark as deleted in metadata
+      const currentMetadata = typeof document.metadata === 'object' && document.metadata !== null
+        ? document.metadata as Record<string, any>
+        : {}
       await prisma.attachment.update({
         where: { id: params.id },
         data: {
           metadata: {
-            ...document.metadata,
+            ...currentMetadata,
             deletedAt: new Date().toISOString(),
             deletedBy: userId,
           },

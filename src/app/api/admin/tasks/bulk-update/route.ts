@@ -34,7 +34,7 @@ export const POST = withTenantContext(
       const existingTasks = await prisma.task.findMany({
         where: {
           id: { in: taskIds },
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 
@@ -47,7 +47,7 @@ export const POST = withTenantContext(
         const assignee = await prisma.user.findFirst({
           where: {
             id: assigneeId,
-            tenantId,
+            tenantId: tenantId as string,
           },
         })
 
@@ -60,13 +60,14 @@ export const POST = withTenantContext(
       const updateData: any = {}
       if (status) updateData.status = status
       if (priority) updateData.priority = priority
-      if (assigneeId !== undefined) updateData.assigneeId = assigneeId
+      if (assigneeId !== undefined && assigneeId !== null) updateData.assigneeId = assigneeId
+      else if (assigneeId === null) updateData.assigneeId = null
 
       // Update all tasks
       const result = await prisma.task.updateMany({
         where: {
           id: { in: taskIds },
-          tenantId,
+          tenantId: tenantId as string,
         },
         data: updateData,
       })

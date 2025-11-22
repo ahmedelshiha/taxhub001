@@ -123,9 +123,6 @@ export const GET = withTenantContext(
       }
 
       // Apply status filter (for future online status tracking)
-      // Currently, status is not tracked in the database
-      // This is prepared for future implementation
-
       // Get total count
       const total = await prisma.user.count({ where })
 

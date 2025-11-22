@@ -67,12 +67,9 @@ export const GET = withTenantContext(
         select: {
           id: true,
           action: true,
-          entity: true,
-          entityId: true,
-          changes: true,
-          details: true,
+          resource: true,
+          metadata: true,
           createdAt: true,
-          updatedAt: true,
         },
         orderBy: {
           createdAt: 'desc',

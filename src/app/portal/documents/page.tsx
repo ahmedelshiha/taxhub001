@@ -339,7 +339,6 @@ export default function PortalDocumentsPage() {
                   status: (doc.status?.toUpperCase() || 'UNKNOWN') as any,
                   uploadedAt: doc.uploadedAt,
                   uploader: doc.uploadedBy,
-                  url: doc.url,
                   category: doc.contentType.split('/')[0],
                   version: 1,
                   isStarred: doc.isStarred,

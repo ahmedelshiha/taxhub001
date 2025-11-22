@@ -121,7 +121,7 @@ export const POST = withAdminAuth(
       const existingUser = await prisma.user.findFirst({
         where: {
           email: input.email,
-          tenantId,
+          tenantId: tenantId as string,
         },
       })
 
@@ -155,7 +155,7 @@ export const POST = withAdminAuth(
       // Log audit event
       await logAudit({
         tenantId,
-        userId: user.id,
+        userId,
         action: 'USER_CREATED',
         entity: 'User',
         entityId: newUser.id,

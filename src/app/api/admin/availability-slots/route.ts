@@ -47,7 +47,7 @@ export const GET = withTenantContext(async (request: NextRequest) => {
       const d = new Date(date)
       d.setHours(0, 0, 0, 0)
       const dEnd = new Date(d);
-      dEnd.setHours(23,59,59,999)
+      dEnd.setHours(23, 59, 59, 999)
       where.date = { gte: d, lte: dEnd }
     }
 
@@ -92,7 +92,7 @@ export const POST = withTenantContext(async (request: NextRequest) => {
     publishSlotCreated(
       parsed.data.serviceId,
       format(slotDate, 'yyyy-MM-dd'),
-      parsed.data.teamMemberId
+      parsed.data.teamMemberId || undefined
     )
 
     return NextResponse.json({ availabilitySlot: created }, { status: 201 })
@@ -136,7 +136,7 @@ export const PUT = withTenantContext(async (request: NextRequest) => {
     publishSlotUpdated(
       parsed.data.serviceId,
       format(slotDate, 'yyyy-MM-dd'),
-      parsed.data.teamMemberId
+      parsed.data.teamMemberId || undefined
     )
 
     return NextResponse.json({ availabilitySlot: updated })

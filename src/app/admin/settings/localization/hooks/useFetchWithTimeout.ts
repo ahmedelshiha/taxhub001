@@ -43,7 +43,7 @@ export function useFetchWithTimeout(defaultTimeoutMs = 15000) {
       }
 
       if (!response.ok) {
-        const message = (payload && (payload.error || payload.message)) || `HTTP ${status}`
+        const message = (payload && typeof payload === 'object' && ((payload as any).error || (payload as any).message)) ? String((payload as any).error || (payload as any).message) : `HTTP ${status}`
         return { ok: false, status, error: message }
       }
 

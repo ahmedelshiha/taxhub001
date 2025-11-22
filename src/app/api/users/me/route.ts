@@ -34,7 +34,6 @@ export const GET = withTenantContext(
           bio: true,
           department: true,
           position: true,
-          phoneNumber: true,
           createdAt: true,
           updatedAt: true,
           role: true,
@@ -82,7 +81,6 @@ export const PUT = withTenantContext(
           bio: input.bio,
           department: input.department,
           position: input.position,
-          phoneNumber: input.phoneNumber,
         },
         select: {
           id: true,
@@ -92,7 +90,6 @@ export const PUT = withTenantContext(
           bio: true,
           department: true,
           position: true,
-          phoneNumber: true,
           createdAt: true,
           updatedAt: true,
           role: true,

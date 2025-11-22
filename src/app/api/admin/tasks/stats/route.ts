@@ -24,7 +24,7 @@ export const GET = withTenantContext(
         Object.values(TaskStatus).map(async (status) => ({
           status,
           count: await prisma.task.count({
-            where: { tenantId, status },
+            where: { tenantId: tenantId as string, status },
           }),
         }))
       )
@@ -34,7 +34,7 @@ export const GET = withTenantContext(
         Object.values(TaskPriority).map(async (priority) => ({
           priority,
           count: await prisma.task.count({
-            where: { tenantId, priority },
+            where: { tenantId: tenantId as string, priority },
           }),
         }))
       )
@@ -42,7 +42,7 @@ export const GET = withTenantContext(
       // Count overdue tasks
       const overdue = await prisma.task.count({
         where: {
-          tenantId,
+          tenantId: tenantId as string,
           dueAt: { lt: new Date() },
           status: { not: TaskStatus.COMPLETED },
         },
@@ -53,18 +53,18 @@ export const GET = withTenantContext(
       const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
       const dueSoon = await prisma.task.count({
         where: {
-          tenantId,
+          tenantId: tenantId as string,
           dueAt: { gte: now, lte: weekFromNow },
           status: { not: TaskStatus.COMPLETED },
         },
       })
 
       // Get total tasks
-      const total = await prisma.task.count({ where: { tenantId } })
+      const total = await prisma.task.count({ where: { tenantId: tenantId as string } })
 
       // Get completion rate
       const completed = await prisma.task.count({
-        where: { tenantId, status: TaskStatus.COMPLETED },
+        where: { tenantId: tenantId as string, status: TaskStatus.COMPLETED },
       })
 
       const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
@@ -72,19 +72,19 @@ export const GET = withTenantContext(
       // Get average tasks per assignee
       const tasksByAssignee = await prisma.task.groupBy({
         by: ['assigneeId'],
-        where: { tenantId, assigneeId: { not: null } },
+        where: { tenantId: tenantId as string, assigneeId: { not: null } },
         _count: true,
       })
 
       const averageTasksPerAssignee =
         tasksByAssignee.length > 0
-          ? Math.round(tasksByAssignee.reduce((sum, t) => sum + t._count, 0) / tasksByAssignee.length)
+          ? Math.round(tasksByAssignee.reduce((sum: number, t: { _count: number }) => sum + t._count, 0) / tasksByAssignee.length)
           : 0
 
       // Get most overdue task
       const mostOverdue = await prisma.task.findFirst({
         where: {
-          tenantId,
+          tenantId: tenantId as string,
           dueAt: { lt: new Date() },
           status: { not: TaskStatus.COMPLETED },
         },

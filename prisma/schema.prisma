@@ -127,6 +127,9 @@ model User {
   notificationsReceived     Notification[]          @relation("NotificationsReceived")
   notificationsSent         Notification[]          @relation("NotificationsSent")
   notificationPreferences   NotificationPreference? @relation("NotificationPreferences")
+  signatureRequestsRequested DocumentSignatureRequest[] @relation("SignatureRequestRequester")
+  signatureRequestsAssigned  DocumentSignatureRequest[] @relation("SignatureRequestSigner")
+  documentSignatures        DocumentSignature[]     @relation("DocumentSigner")
 
   @@unique([tenantId, email])
   @@index([tenantId, role])
@@ -398,6 +401,9 @@ model Tenant {
   approvalHistory       ApprovalHistory[]
   notifications         Notification[]
   notificationPreferences NotificationPreference[]
+  documentSignatureRequests DocumentSignatureRequest[]
+  documentSignatures    DocumentSignature[]
+  analysisJobs          AnalysisJob[]
 
   @@index([status])
 }
@@ -977,34 +983,37 @@ model ScheduledReminder {
 }
 
 model Attachment {
-  id               String          @id @default(cuid())
-  key              String?         @unique
-  url              String?
-  name             String?
-  size             Int?
-  contentType      String?
-  avStatus         String?
-  avDetails        Json?
-  avScanAt         DateTime?
-  avThreatName     String?
-  avScanTime       Float?
-  provider         String?
-  isStarred        Boolean         @default(false)
-  metadata         Json?
-  uploadedAt       DateTime        @default(now())
-  uploaderId       String?
-  entityId         String?
-  serviceRequestId String?
-  tenantId         String
-  entity           Entity?         @relation(fields: [entityId], references: [id])
-  serviceRequest   ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  tenant           Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  uploader         User?           @relation(fields: [uploaderId], references: [id])
-  expenses         Expense[]
-  versions         DocumentVersion[]
-  links            DocumentLink[]
-  auditLogs        DocumentAuditLog[]
-  bills            Bill[]
+  id                      String                      @id @default(cuid())
+  key                     String?                     @unique
+  url                     String?
+  name                    String?
+  size                    Int?
+  contentType             String?
+  avStatus                String?
+  avDetails               Json?
+  avScanAt                DateTime?
+  avThreatName            String?
+  avScanTime              Float?
+  provider                String?
+  isStarred               Boolean                     @default(false)
+  metadata                Json?
+  uploadedAt              DateTime                    @default(now())
+  uploaderId              String?
+  entityId                String?
+  serviceRequestId        String?
+  tenantId                String
+  entity                  Entity?                     @relation(fields: [entityId], references: [id])
+  serviceRequest          ServiceRequest?             @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  tenant                  Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  uploader                User?                       @relation(fields: [uploaderId], references: [id])
+  expenses                Expense[]
+  versions                DocumentVersion[]
+  links                   DocumentLink[]
+  auditLogs               DocumentAuditLog[]
+  bills                   Bill[]
+  signatureRequests       DocumentSignatureRequest[]
+  signatures              DocumentSignature[]
+  analysisJobs            AnalysisJob[]
 
   @@index([serviceRequestId])
   @@index([tenantId])
@@ -3230,6 +3239,132 @@ model NotificationPreference {
 
   @@index([tenantId])
   @@map("notification_preferences")
+}
+
+// ============================================================================
+// Document Signature Models
+// ============================================================================
+
+model DocumentSignatureRequest {
+  id           String                     @id @default(cuid())
+  attachmentId String
+  requesterId  String
+  signerId     String
+  status       SignatureRequestStatus     @default(PENDING)
+  message      String?                    @db.Text
+  dueAt        DateTime?
+  expiresAt    DateTime?
+  completedAt  DateTime?
+  rejectedAt   DateTime?
+  rejectionReason String?                 @db.Text
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  tenantId     String
+
+  // Relations
+  attachment   Attachment                 @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  requester    User                       @relation("SignatureRequestRequester", fields: [requesterId], references: [id])
+  signer       User                       @relation("SignatureRequestSigner", fields: [signerId], references: [id])
+  tenant       Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  signatures   DocumentSignature[]
+
+  @@index([attachmentId])
+  @@index([requesterId])
+  @@index([signerId])
+  @@index([status])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("document_signature_requests")
+}
+
+model DocumentSignature {
+  id                        String                    @id @default(cuid())
+  signatureRequestId        String?
+  attachmentId              String
+  signerId                  String
+  signatureData             String?                   @db.Text  // Base64 signature image or path
+  signatureType             String                    @default("digital") @db.VarChar(50) // digital, drawn, uploaded
+  signedAt                  DateTime                  @default(now())
+  ipAddress                 String?
+  userAgent                 String?
+  location                  String?                   // Geographic location if available
+  certificateId             String?                   // For advanced digital signatures
+  certificateFingerprint    String?                   // Hash of certificate
+  metadata                  Json?                     // Additional signature metadata
+  createdAt                 DateTime                  @default(now())
+  tenantId                  String
+
+  // Relations
+  signatureRequest          DocumentSignatureRequest? @relation(fields: [signatureRequestId], references: [id], onDelete: SetNull)
+  attachment                Attachment                @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  signer                    User                      @relation("DocumentSigner", fields: [signerId], references: [id])
+  tenant                    Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([attachmentId])
+  @@index([signerId])
+  @@index([signatureRequestId])
+  @@index([tenantId, signedAt])
+  @@map("document_signatures")
+}
+
+// ============================================================================
+// Document Analysis Models
+// ============================================================================
+
+model AnalysisJob {
+  id              String              @id @default(cuid())
+  attachmentId    String
+  status          AnalysisStatus      @default(PENDING)
+  analysisType    String              @default("general") @db.VarChar(50) // general, tax, compliance, ocr, etc.
+  priority        Priority            @default(MEDIUM)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  failedAt        DateTime?
+  results         Json?               // Analysis results
+  errorMessage    String?             @db.Text
+  processingTime  Int?                // milliseconds
+  confidence      Decimal?            @db.Decimal(5, 2) // 0-100
+  extractedText   String?             @db.Text
+  extractedData   Json?               // Structured data extraction
+  metadata        Json?               // Job metadata
+  retryCount      Int                 @default(0)
+  maxRetries      Int                 @default(3)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  tenantId        String
+
+  // Relations
+  attachment      Attachment          @relation(fields: [attachmentId], references: [id], onDelete: Cascade)
+  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([attachmentId])
+  @@index([status])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([createdAt])
+  @@map("analysis_jobs")
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum SignatureRequestStatus {
+  PENDING
+  SIGNED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
 }
 
 enum ApprovalItemType {
