@@ -137,7 +137,7 @@ export const POST = withAdminAuth(
           role: input.role,
           department: input.department,
           position: input.position,
-          tenantId,
+          tenantId: tenantId as string,
           isActive: true,
         },
         select: {
