@@ -69,7 +69,7 @@ export function monitorWebVitals() {
   if (typeof window === 'undefined') return
 
   onCLS(sendMetricToAnalytics)
-  onFID(sendMetricToAnalytics)
+  onINP(sendMetricToAnalytics)
   onFCP(sendMetricToAnalytics)
   onLCP(sendMetricToAnalytics)
   onTTFB(sendMetricToAnalytics)
