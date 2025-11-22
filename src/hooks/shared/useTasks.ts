@@ -18,7 +18,7 @@ export interface TaskFilters {
 
 export interface UseTasksResponse {
   data: any[]
-  error?: Error
+  error?: any
   isLoading: boolean
   isValidating: boolean
   mutate: any
