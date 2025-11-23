@@ -1599,7 +1599,8 @@ EXCEPTION
 END $$;
 
 -- CreateTable
-CREATE TABLE "favorite_settings" (
+DO $$ BEGIN
+    CREATE TABLE "favorite_settings" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -1609,10 +1610,14 @@ CREATE TABLE "favorite_settings" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "favorite_settings_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "audit_events" (
+DO $$ BEGIN
+    CREATE TABLE "audit_events" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT,
     "userId" TEXT,
@@ -1622,10 +1627,14 @@ CREATE TABLE "audit_events" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "audit_events_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "organization_settings" (
+DO $$ BEGIN
+    CREATE TABLE "organization_settings" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -1648,10 +1657,14 @@ CREATE TABLE "organization_settings" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "organization_settings_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "user_management_settings" (
+DO $$ BEGIN
+    CREATE TABLE "user_management_settings" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "roles" JSONB NOT NULL DEFAULT '{}',
@@ -1669,10 +1682,14 @@ CREATE TABLE "user_management_settings" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "user_management_settings_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "translation_keys" (
+DO $$ BEGIN
+    CREATE TABLE "translation_keys" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "key" TEXT NOT NULL,
@@ -1684,10 +1701,14 @@ CREATE TABLE "translation_keys" (
     "addedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "translation_keys_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "translation_metrics" (
+DO $$ BEGIN
+    CREATE TABLE "translation_metrics" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "date" DATE NOT NULL,
@@ -1707,10 +1728,14 @@ CREATE TABLE "translation_metrics" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "translation_metrics_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "integration_settings" (
+DO $$ BEGIN
+    CREATE TABLE "integration_settings" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
     "payments" JSONB,
@@ -1722,7 +1747,10 @@ CREATE TABLE "integration_settings" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "integration_settings_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
 CREATE TABLE "communication_settings" (
