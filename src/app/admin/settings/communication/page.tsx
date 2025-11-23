@@ -199,7 +199,7 @@ export default function CommunicationSettingsPage() {
   )
 }
 
-function ReminderSection({ title, data, onChange }: { title: string; data: Record<string, any>; onChange: (field: string, value: Record<string, any>) => void }) {
+function ReminderSection({ title, data, onChange }: { title: string; data: Record<string, any>; onChange: (field: string, value: any) => void }) {
   const channels = Array.isArray(data?.channels) ? data.channels : ['email']
   const has = (c: string) => channels.includes(c)
   const toggleChannel = (c: string) => {
