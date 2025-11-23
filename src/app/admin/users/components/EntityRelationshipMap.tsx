@@ -8,7 +8,9 @@ import { AlertTriangle, CheckCircle, Info } from 'lucide-react'
 import {
   EntityRelationshipMap,
   RoleConflict,
-  HierarchyIssue
+  HierarchyIssue,
+  EntityNode,
+  EntityRelationship
 } from '@/services/entity-relationship.service'
 
 interface EntityRelationshipMapComponentProps {
@@ -270,7 +272,7 @@ function StatCard({
 /**
  * Graph Visualization (Simplified Network)
  */
-function GraphVisualization({ nodes, edges }: { nodes: any[]; edges: any[] }) {
+function GraphVisualization({ nodes, edges }: { nodes: EntityNode[]; edges: EntityRelationship[] }) {
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 h-96 flex items-center justify-center">
       <div className="text-center text-gray-500">
@@ -344,7 +346,7 @@ function GraphVisualization({ nodes, edges }: { nodes: any[]; edges: any[] }) {
 /**
  * Matrix Visualization
  */
-function MatrixVisualization({ nodes, edges }: { nodes: any[]; edges: any[] }) {
+function MatrixVisualization({ nodes, edges }: { nodes: EntityNode[]; edges: EntityRelationship[] }) {
   const users = nodes.filter(n => n.type === 'USER')
   const roles = nodes.filter(n => n.type === 'ROLE')
 
@@ -381,7 +383,7 @@ function MatrixVisualization({ nodes, edges }: { nodes: any[]; edges: any[] }) {
 /**
  * Tree Visualization
  */
-function TreeVisualization({ nodes, edges }: { nodes: any[]; edges: any[] }) {
+function TreeVisualization({ nodes, edges }: { nodes: EntityNode[]; edges: EntityRelationship[] }) {
   return (
     <div className="bg-gray-50 rounded p-4 text-sm font-mono">
       <div className="mb-4">
