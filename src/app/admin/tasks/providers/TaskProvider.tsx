@@ -117,13 +117,13 @@ export const TaskProvider: React.FC<{ children: React.ReactNode }> = ({ children
       es.onmessage = (ev) => {
         try {
           const d: TaskEvent = JSON.parse(ev.data)
-          if (!d) return
+          if (!d || !d.payload) return
           if (d.type === 'task.created') {
-            setTasks(prev => [toUiTask(d.payload), ...prev.filter(t => t.id !== d.payload.id)])
+            setTasks(prev => [toUiTask(d.payload as Record<string, unknown>), ...prev.filter(t => t.id !== (d.payload as any).id)])
           } else if (d.type === 'task.updated') {
-            setTasks(prev => prev.map(t => t.id === d.payload.id ? toUiTask(d.payload) : t))
+            setTasks(prev => prev.map(t => t.id === (d.payload as any).id ? toUiTask(d.payload as Record<string, unknown>) : t))
           } else if (d.type === 'task.deleted') {
-            setTasks(prev => prev.filter(t => t.id !== d.payload.id))
+            setTasks(prev => prev.filter(t => t.id !== (d.payload as any).id))
           }
         } catch (e) { /* ignore malformed */ }
       }
