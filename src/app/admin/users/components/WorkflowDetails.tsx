@@ -55,7 +55,7 @@ export function WorkflowDetails({ isOpen, onClose, workflow }: WorkflowDetailsPr
         body: JSON.stringify({ action })
       })
       if (response.ok) {
-        console.log(`Action ${action} completed`)
+        // Action completed
       }
     } catch (err) {
       console.error('Action failed:', err)
