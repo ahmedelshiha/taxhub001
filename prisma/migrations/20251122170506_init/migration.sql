@@ -489,14 +489,19 @@ EXCEPTION
 END $$;
 
 -- CreateTable
-CREATE TABLE "verificationtokens" (
+DO $$ BEGIN
+    CREATE TABLE "verificationtokens" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "translation_priorities" (
+DO $$ BEGIN
+    CREATE TABLE "translation_priorities" (
     "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "notes" TEXT,
@@ -510,10 +515,14 @@ CREATE TABLE "translation_priorities" (
     "status" "PriorityStatus" NOT NULL DEFAULT 'OPEN',
 
     CONSTRAINT "translation_priorities_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "Tenant" (
+DO $$ BEGIN
+    CREATE TABLE "Tenant" (
     "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -526,10 +535,14 @@ CREATE TABLE "Tenant" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Tenant_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "tenant_memberships" (
+DO $$ BEGIN
+    CREATE TABLE "tenant_memberships" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "tenantId" TEXT NOT NULL,
@@ -538,10 +551,14 @@ CREATE TABLE "tenant_memberships" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "tenant_memberships_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "audit_logs" (
+DO $$ BEGIN
+    CREATE TABLE "audit_logs" (
     "id" TEXT NOT NULL,
     "tenantId" TEXT,
     "userId" TEXT,
@@ -553,10 +570,14 @@ CREATE TABLE "audit_logs" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "posts" (
+DO $$ BEGIN
+    CREATE TABLE "posts" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -587,10 +608,14 @@ CREATE TABLE "posts" (
     "comments" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
-CREATE TABLE "newsletter" (
+DO $$ BEGIN
+    CREATE TABLE "newsletter" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT,
@@ -600,7 +625,10 @@ CREATE TABLE "newsletter" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "newsletter_pkey" PRIMARY KEY ("id")
-);
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
 CREATE TABLE "notification_settings" (
