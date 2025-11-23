@@ -128,10 +128,10 @@ function applySearchOperator(
 /**
  * Get nested property value from object
  */
-function getNestedValue(obj: any, path: string): string | undefined {
+function getNestedValue(obj: Record<string, unknown>, path: string): string | undefined {
   return path
     .split('.')
-    .reduce((current, key) => current?.[key], obj as any)
+    .reduce((current: unknown, key: string) => (typeof current === 'object' && current !== null ? (current as Record<string, unknown>)?.[key] : undefined), obj)
     ?.toString()
 }
 
