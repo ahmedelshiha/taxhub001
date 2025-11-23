@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import useSWR from 'swr'
 import ListPage from '@/components/dashboard/templates/ListPage'
 import type { Column, FilterConfig, RowAction, TabItem } from '@/types/dashboard'
+import type { ServiceAnalytics } from '@/types/services'
 import { apiFetch } from '@/lib/api'
 import { Modal } from '@/components/ui/Modal'
 import { ServiceForm } from '@/components/admin/services/ServiceForm'
@@ -24,9 +25,9 @@ interface ServiceRow {
   updatedAt?: string | Date | null
 }
 
-const fetcher = async (url: string) => {
+const fetcher = async (url: string): Promise<{ services: any[]; total: number; analytics: ServiceAnalytics | null }> => {
   const res = await apiFetch(url)
-  const defaultAnalytics = {
+  const defaultAnalytics: ServiceAnalytics = {
     monthlyBookings: [],
     revenueByService: [],
     popularServices: [],
@@ -39,7 +40,7 @@ const fetcher = async (url: string) => {
       ? json
       : (Array.isArray(json?.services) ? json.services : (Array.isArray(json?.items) ? json.items : []))
     const total = typeof json?.total === 'number' ? json.total : services.length
-    const analytics = json?.analytics ? { ...defaultAnalytics, ...json.analytics } : null
+    const analytics = json?.analytics ? { ...defaultAnalytics, ...json.analytics } as ServiceAnalytics : null
     return { services, total, analytics }
   } catch {
     return { services: [], total: 0, analytics: null }
@@ -67,7 +68,7 @@ export default function ServicesAdminPage() {
   const perms = usePermissions()
 
   const query = buildQuery({ search: search || undefined, status: filters.status && filters.status !== 'all' ? filters.status : undefined, category: filters.category, limit: String(pageSize), offset: String((page-1)*pageSize), sortBy, sortOrder })
-  const { data, isLoading, mutate } = useSWR<{ services: ServiceRow[]; total: number; analytics: Record<string, any> }>(`/api/admin/services${query}`, fetcher)
+  const { data, isLoading, mutate } = useSWR(`/api/admin/services${query}`, fetcher)
   const items = data?.services ?? []
   const total = data?.total ?? items.length
 

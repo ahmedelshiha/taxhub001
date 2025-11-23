@@ -40,7 +40,7 @@ interface BookingItem {
   date: string
 }
 
-interface TaskFormData {
+export interface TaskFormData {
   title: string
   description?: string
   priority: TaskPriority
@@ -186,7 +186,8 @@ export default function TaskEditModal({ open, onClose, task, onSave, availableUs
       await onSave(payload)
       onClose()
     } catch (error: unknown) {
-      setErrors({ submit: error?.message || 'Failed to save task' })
+      const message = error instanceof Error ? error.message : String(error)
+      setErrors({ submit: message || 'Failed to save task' })
     } finally {
       setIsLoading(false)
     }

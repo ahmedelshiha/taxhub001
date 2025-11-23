@@ -33,7 +33,7 @@ export default function TaskFiltersPanel() {
     return () => ac.abort()
   }, [])
 
-  const update = (key: string, value: unknown) => setFilters((prev: Record<string, unknown>) => ({ ...prev, [key]: value }))
+  const update = (key: string, value: unknown) => setFilters({ ...filters, [key]: value })
 
   return (
     <Card className="p-4">

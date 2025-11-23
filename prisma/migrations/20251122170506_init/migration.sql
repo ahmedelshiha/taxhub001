@@ -279,19 +279,23 @@ EXCEPTION
 END $$;
 
 -- CreateTable
-CREATE TABLE "languages" (
-    "code" VARCHAR(10) NOT NULL DEFAULT 'en',
-    "name" VARCHAR(100) NOT NULL,
-    "nativeName" VARCHAR(100) NOT NULL,
-    "direction" VARCHAR(3) NOT NULL DEFAULT 'ltr',
-    "flag" VARCHAR(5),
-    "bcp47Locale" VARCHAR(10) NOT NULL,
-    "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+DO $$ BEGIN
+    CREATE TABLE "languages" (
+        "code" VARCHAR(10) NOT NULL DEFAULT 'en',
+        "name" VARCHAR(100) NOT NULL,
+        "nativeName" VARCHAR(100) NOT NULL,
+        "direction" VARCHAR(3) NOT NULL DEFAULT 'ltr',
+        "flag" VARCHAR(5),
+        "bcp47Locale" VARCHAR(10) NOT NULL,
+        "enabled" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "languages_pkey" PRIMARY KEY ("code")
-);
+        CONSTRAINT "languages_pkey" PRIMARY KEY ("code")
+    );
+EXCEPTION
+    WHEN duplicate_table THEN null;
+END $$;
 
 -- CreateTable
 CREATE TABLE "users" (
