@@ -34,7 +34,7 @@ interface ImportError {
   row: number
   field: string
   message: string
-  value?: any
+  value?: unknown
 }
 
 interface FieldMapping {
