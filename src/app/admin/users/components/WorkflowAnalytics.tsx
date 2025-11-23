@@ -4,7 +4,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Workflow } from '@/services/workflow-designer.service'
+import { Workflow, BottleneckAnalysis, ValidationError } from '@/services/workflow-designer.service'
 import { TrendingUp, AlertTriangle, Zap } from 'lucide-react'
 
 interface WorkflowAnalyticsProps {
