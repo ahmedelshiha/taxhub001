@@ -33,12 +33,6 @@ export default function BulkActionsPanel({
 
   const handlePreview = () => {
     setShowPreview(true)
-    console.log({
-      action: 'preview',
-      userIds: Array.from(selectedUserIds),
-      actionType,
-      actionValue
-    })
   }
 
   const handleApply = async () => {
@@ -61,7 +55,6 @@ export default function BulkActionsPanel({
         throw new Error('Failed to apply bulk action')
       }
 
-      console.log('Bulk action applied successfully')
       // After successful application, clear selection
       onClear()
     } catch (error) {
